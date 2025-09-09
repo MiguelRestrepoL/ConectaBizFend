@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import InputField from '../components/InputField';
-import Button from '../components/Button';
-import SocialButton from '../components/SocialButton';
-import { authService } from '../api/auth';
+import InputField from './components/InputField';
+import Button from './components/Button';
+import SocialButton from './components/SocialButton';
+import { authService } from './api/auth';
 
 const LoginPage = () => {
   const router = useRouter();
@@ -61,7 +61,7 @@ const LoginPage = () => {
       await authService.login(formData.email, formData.password);
       
       // Redirigir al dashboard o página principal
-      router.push('/dashboard');
+      router.push('/home');
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       setErrors({ submit: error.message });
