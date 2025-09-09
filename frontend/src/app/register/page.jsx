@@ -94,7 +94,7 @@ const RegisterPage = () => {
       }
       
       // Redirigir al dashboard o página principal
-      router.push('/dashboard');
+      router.push('/home');
     } catch (error) {
       console.error('Error al registrar:', error);
       setErrors({ submit: error.message });
