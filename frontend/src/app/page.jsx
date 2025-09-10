@@ -137,8 +137,8 @@ const LoginPage = () => {
             <InputField
               type="email"
               label="Email"
-              placeholder="Value"
-              icon="✉️"
+              placeholder="Ingrese su email"
+              icon="email"
               name="email"
               value={formData.email}
               onChange={handleInputChange}
@@ -151,8 +151,8 @@ const LoginPage = () => {
             <InputField
               type="password"
               label="Contraseña"
-              placeholder="Value"
-              icon="🔑"
+              placeholder="Ingrese su contraseña"
+              icon="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}

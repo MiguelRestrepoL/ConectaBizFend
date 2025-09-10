@@ -15,11 +15,10 @@ export default function Clientes() {
     window.location.href = `/editar-cliente/${client.id}`;
   };
 
-  // Función para manejar la visualización de cliente
+  // Función para manejar la visualización de cliente (ahora manejada por ClientList)
   const handleViewClient = (client) => {
-    // TODO: Implementar modal o página de detalles
+    // Esta función ya no se usa, el modal se maneja internamente en ClientList
     console.log('Ver cliente:', client);
-    alert(`Detalles de ${client.nombre} ${client.apellido} - Próximamente`);
   };
 
   // Función para refrescar la lista después de agregar un cliente
