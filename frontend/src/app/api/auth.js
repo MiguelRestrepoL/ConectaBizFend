@@ -139,9 +139,22 @@ export const authService = {
   },
 
   // Cerrar sesión
-  logout: () => {
-    localStorage.removeItem('authToken');
-    window.location.href = '/login';
+  logout: async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        // Llamar al endpoint del backend para invalidar el token
+        await api.post('/auth/logout', { token });
+      }
+    } catch (error) {
+      // Si hay error en el logout del servidor, continuamos con la limpieza local
+      console.warn('Error al invalidar token en el servidor:', error);
+    } finally {
+      // Siempre limpiamos el token local y redirigimos
+      localStorage.removeItem('authToken');
+      window.location.href = '/';
+    }
   },
 
   // Obtener usuario actual
