@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import OrderCard from './OrderCard';
-import DeleteConfirmModal from './DeleteConfirmModal';
+import DeleteOrderModal from './DeleteOrderModal';
 import OrderViewModal from './OrderViewModal';
+import AlertModal from './AlertModal';
 import { getOrders, deleteOrder } from '../api/orders';
 
 const OrderList = ({ onEdit, onView, refreshTrigger }) => {
@@ -17,7 +18,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
     limit: 12
   });
   const [searchTimeout, setSearchTimeout] = useState(null);
-  const [deleteModal, setDeleteModal] = useState({
+  const [deleteOrderModal, setDeleteOrderModal] = useState({
     isOpen: false,
     order: null,
     loading: false
@@ -26,6 +27,22 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
     isOpen: false,
     order: null
   });
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
+
+  // Función helper para mostrar alertas
+  const showAlert = (title, message, type = 'info') => {
+    setAlertModal({
+      isOpen: true,
+      title,
+      message,
+      type
+    });
+  };
 
   // Cargar pedidos
   const loadOrders = async (page = 1, search = '') => {
@@ -93,7 +110,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
 
   // Abrir modal de confirmación de eliminación
   const handleDeleteClick = (order) => {
-    setDeleteModal({
+    setDeleteOrderModal({
       isOpen: true,
       order: order,
       loading: false
@@ -102,7 +119,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
 
   // Cerrar modal de eliminación
   const handleDeleteCancel = () => {
-    setDeleteModal({
+    setDeleteOrderModal({
       isOpen: false,
       order: null,
       loading: false
@@ -111,34 +128,34 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
 
   // Confirmar eliminación
   const handleDeleteConfirm = async () => {
-    if (!deleteModal.order) return;
+    if (!deleteOrderModal.order) return;
 
-    setDeleteModal(prev => ({ ...prev, loading: true }));
+    setDeleteOrderModal(prev => ({ ...prev, loading: true }));
 
     try {
-      const result = await deleteOrder(deleteModal.order.id);
+      const result = await deleteOrder(deleteOrderModal.order.id);
       
       if (result.success) {
         // Recargar la lista de pedidos
         await loadOrders(pagination.currentPage, searchTerm);
         
         // Cerrar modal
-        setDeleteModal({
+        setDeleteOrderModal({
           isOpen: false,
           order: null,
           loading: false
         });
         
         // Mostrar mensaje de éxito
-        alert('Pedido eliminado exitosamente');
+        showAlert('Éxito', 'Pedido eliminado exitosamente', 'success');
       } else {
-        alert('Error al eliminar pedido: ' + result.error);
-        setDeleteModal(prev => ({ ...prev, loading: false }));
+        showAlert('Error', 'Error al eliminar pedido: ' + result.error, 'error');
+        setDeleteOrderModal(prev => ({ ...prev, loading: false }));
       }
     } catch (err) {
-      alert('Error al eliminar pedido');
+      showAlert('Error', 'Error al eliminar pedido', 'error');
       console.error('Error deleting order:', err);
-      setDeleteModal(prev => ({ ...prev, loading: false }));
+      setDeleteOrderModal(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -472,13 +489,13 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
         </div>
       )}
 
-      {/* Modal de confirmación de eliminación */}
-      <DeleteConfirmModal
-        isOpen={deleteModal.isOpen}
+      {/* Modal de confirmación de eliminación de pedido */}
+      <DeleteOrderModal
+        isOpen={deleteOrderModal.isOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        client={deleteModal.order}
-        loading={deleteModal.loading}
+        order={deleteOrderModal.order}
+        loading={deleteOrderModal.loading}
       />
 
       {/* Modal de visualización de pedido */}
@@ -486,6 +503,15 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
         isOpen={viewModal.isOpen}
         onClose={handleViewClose}
         order={viewModal.order}
+      />
+
+      {/* Modal de alerta */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
       />
     </div>
   );

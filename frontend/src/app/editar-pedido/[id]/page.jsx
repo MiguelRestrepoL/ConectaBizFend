@@ -6,6 +6,7 @@ import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import OrderForm from '../../components/OrderForm';
+import AlertModal from '../../components/AlertModal';
 import { getOrderById, updateOrder } from '../../api/orders';
 
 export default function EditarPedido() {
@@ -17,6 +18,12 @@ export default function EditarPedido() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  });
 
   // Cargar pedido al montar el componente
   useEffect(() => {
@@ -54,13 +61,32 @@ export default function EditarPedido() {
       const result = await updateOrder(id, formData);
       
       if (result.success) {
-        alert('Pedido actualizado exitosamente');
-        router.push('/pedidos');
+        setAlertModal({
+          isOpen: true,
+          title: 'Éxito',
+          message: 'Pedido actualizado exitosamente',
+          type: 'success'
+        });
+        
+        // Redirigir después de un breve delay
+        setTimeout(() => {
+          router.push('/pedidos');
+        }, 2000);
       } else {
-        setError(result.error || 'Error al actualizar el pedido');
+        setAlertModal({
+          isOpen: true,
+          title: 'Error',
+          message: result.error || 'Error al actualizar el pedido',
+          type: 'error'
+        });
       }
     } catch (err) {
-      setError('Error de conexión al actualizar el pedido');
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Error de conexión al actualizar el pedido',
+        type: 'error'
+      });
       console.error('Error updating order:', err);
     } finally {
       setSaving(false);
@@ -200,6 +226,17 @@ export default function EditarPedido() {
       
       {/* Footer */}
       <Footer />
+
+      {/* Modal de alerta */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+        autoClose={alertModal.type === 'success'}
+        autoCloseDelay={2000}
+      />
     </div>
   );
 }
