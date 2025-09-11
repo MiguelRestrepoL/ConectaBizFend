@@ -50,6 +50,7 @@ export const authService = {
       
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('userId', response.data.user.id);
       }
       
       return response.data;
