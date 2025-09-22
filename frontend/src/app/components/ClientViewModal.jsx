@@ -18,10 +18,35 @@ const ClientViewModal = ({ isOpen, onClose, client }) => {
     return parts.length > 0 ? parts.join(', ') : 'No disponible';
   };
 
-  const getInitials = (nombre, apellido) => {
-    const firstInitial = nombre ? nombre.charAt(0).toUpperCase() : '';
-    const lastInitial = apellido ? apellido.charAt(0).toUpperCase() : '';
-    return firstInitial + lastInitial;
+  const getInitials = (client) => {
+    if (client.tipo_cliente === 'persona_juridica') {
+      // Para persona jurídica, usar las primeras letras de la razón social
+      return client.razon_social ? client.razon_social.substring(0, 2).toUpperCase() : 'PJ';
+    } else {
+      // Para persona natural, usar iniciales del nombre y apellido
+      const firstInitial = client.nombre ? client.nombre.charAt(0).toUpperCase() : '';
+      const lastInitial = client.apellido ? client.apellido.charAt(0).toUpperCase() : '';
+      return firstInitial + lastInitial;
+    }
+  };
+
+  const getDisplayName = (client) => {
+    if (client.tipo_cliente === 'persona_juridica') {
+      return client.razon_social || 'Persona Jurídica';
+    } else {
+      return `${client.nombre || ''} ${client.apellido || ''}`.trim() || 'Persona Natural';
+    }
+  };
+
+  const getSubtitle = (client) => {
+    if (client.tipo_cliente === 'persona_juridica') {
+      return client.nit ? `NIT: ${client.nit}` : 'Persona Jurídica';
+    } else {
+      const parts = [];
+      if (client.segundo_nombre) parts.push(client.segundo_nombre);
+      if (client.segundo_apellido) parts.push(client.segundo_apellido);
+      return parts.join(' ');
+    }
   };
 
   const formatDate = (dateString) => {
@@ -40,20 +65,30 @@ const ClientViewModal = ({ isOpen, onClose, client }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-xl">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+        <div className={`bg-gradient-to-r ${client.tipo_cliente === 'persona_juridica' 
+          ? 'from-blue-600 to-indigo-600' 
+          : 'from-purple-600 to-blue-600'} text-white p-6`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mr-4">
-                {getInitials(client.nombre, client.apellido)}
+                {getInitials(client)}
               </div>
               <div>
                 <h2 className="text-2xl font-bold">
-                  {client.nombre} {client.apellido}
+                  {getDisplayName(client)}
                 </h2>
                 <p className="text-purple-100">
-                  {client.segundo_nombre && `${client.segundo_nombre} `}
-                  {client.segundo_apellido}
+                  {getSubtitle(client)}
                 </p>
+                <div className="mt-1">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    client.tipo_cliente === 'persona_juridica' 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-purple-100 text-purple-800'
+                  }`}>
+                    {client.tipo_cliente === 'persona_juridica' ? 'Persona Jurídica' : 'Persona Natural'}
+                  </span>
+                </div>
               </div>
             </div>
             <button
@@ -72,47 +107,120 @@ const ClientViewModal = ({ isOpen, onClose, client }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Columna izquierda - Información personal */}
             <div className="space-y-6">
-              {/* Información Personal */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  Información Personal
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Nombre:</span>
-                    <span className="font-medium">{client.nombre || 'No disponible'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Apellido:</span>
-                    <span className="font-medium">{client.apellido || 'No disponible'}</span>
-                  </div>
-                  {client.segundo_nombre && (
+              {/* Información según tipo de cliente */}
+              {client.tipo_cliente === 'persona_natural' ? (
+                /* Información Personal - Persona Natural */
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Información Personal
+                  </h3>
+                  <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Segundo nombre:</span>
-                      <span className="font-medium">{client.segundo_nombre}</span>
+                      <span className="text-gray-600">Nombre:</span>
+                      <span className="font-medium">{client.nombre || 'No disponible'}</span>
                     </div>
-                  )}
-                  {client.segundo_apellido && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Segundo apellido:</span>
-                      <span className="font-medium">{client.segundo_apellido}</span>
+                      <span className="text-gray-600">Apellido:</span>
+                      <span className="font-medium">{client.apellido || 'No disponible'}</span>
                     </div>
-                  )}
-                  {client.nacionalidad && (
+                    {client.segundo_nombre && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Segundo nombre:</span>
+                        <span className="font-medium">{client.segundo_nombre}</span>
+                      </div>
+                    )}
+                    {client.segundo_apellido && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Segundo apellido:</span>
+                        <span className="font-medium">{client.segundo_apellido}</span>
+                      </div>
+                    )}
+                    {client.nacionalidad && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Nacionalidad:</span>
+                        <span className="font-medium">{client.nacionalidad}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Nacionalidad:</span>
-                      <span className="font-medium">{client.nacionalidad}</span>
+                      <span className="text-gray-600">Idioma:</span>
+                      <span className="font-medium">{client.idioma || 'No disponible'}</span>
                     </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Idioma:</span>
-                    <span className="font-medium">{client.idioma || 'No disponible'}</span>
                   </div>
                 </div>
-              </div>
+              ) : (
+                /* Información Empresarial - Persona Jurídica */
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Información Empresarial
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Razón Social:</span>
+                      <span className="font-medium">{client.razon_social || 'No disponible'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">NIT:</span>
+                      <span className="font-medium">{client.nit || 'No disponible'}</span>
+                    </div>
+                    {client.digito_verificacion && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Dígito de Verificación:</span>
+                        <span className="font-medium">{client.digito_verificacion}</span>
+                      </div>
+                    )}
+                    {client.tipo_empresa && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Tipo de Empresa:</span>
+                        <span className="font-medium">{client.tipo_empresa}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Representante Legal:</span>
+                      <span className="font-medium">{client.representante_legal || 'No disponible'}</span>
+                    </div>
+                    {client.cedula_representante && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Cédula Representante:</span>
+                        <span className="font-medium">{client.cedula_representante}</span>
+                      </div>
+                    )}
+                    {client.actividad_economica && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Actividad Económica:</span>
+                        <span className="font-medium text-right max-w-xs">{client.actividad_economica}</span>
+                      </div>
+                    )}
+                    {client.codigo_ciiu && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Código CIIU:</span>
+                        <span className="font-medium">{client.codigo_ciiu}</span>
+                      </div>
+                    )}
+                    {client.fecha_constitucion && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Fecha de Constitución:</span>
+                        <span className="font-medium">{new Date(client.fecha_constitucion).toLocaleDateString('es-ES')}</span>
+                      </div>
+                    )}
+                    {client.capital_social && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Capital Social:</span>
+                        <span className="font-medium">${Number(client.capital_social).toLocaleString('es-ES')}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Idioma:</span>
+                      <span className="font-medium">{client.idioma || 'No disponible'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Información de Contacto */}
               <div className="bg-gray-50 rounded-lg p-6">
