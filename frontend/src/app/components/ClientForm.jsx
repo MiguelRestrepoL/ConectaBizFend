@@ -8,7 +8,10 @@ import TagInput from './TagInput';
 
 const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = false }) => {
   const [formData, setFormData] = useState(initialData || {
-    // Información personal
+    // Tipo de cliente
+    tipo_cliente: 'persona_natural',
+    
+    // Información personal (para persona natural)
     nombre: '',
     apellido: '',
     segundo_nombre: '',
@@ -34,6 +37,18 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     // Información fiscal
     recaudar_impuestos: 'recaudar',
     
+    // Información para persona jurídica
+    razon_social: '',
+    nit: '',
+    digito_verificacion: '',
+    representante_legal: '',
+    cedula_representante: '',
+    tipo_empresa: '',
+    actividad_economica: '',
+    codigo_ciiu: '',
+    fecha_constitucion: '',
+    capital_social: '',
+    
     // Notas y etiquetas
     notas: '',
     etiquetas: []
@@ -49,9 +64,12 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
   }, [initialData]);
 
   const handleInputChange = (field, value) => {
+    // Convertir null/undefined a cadena vacía para campos de texto
+    const processedValue = (value === null || value === undefined) ? '' : value;
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: processedValue
     }));
     
     // Clear error when user starts typing
@@ -74,9 +92,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
   const validateForm = () => {
     const newErrors = {};
 
-    // Required fields validation
-    if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es requerido';
-    if (!formData.apellido.trim()) newErrors.apellido = 'El apellido es requerido';
+    // Validaciones comunes
     if (!formData.correo_electronico.trim()) {
       newErrors.correo_electronico = 'El correo electrónico es requerido';
     } else if (!/\S+@\S+\.\S+/.test(formData.correo_electronico)) {
@@ -84,17 +100,68 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     }
     if (!formData.numero_telefono.trim()) newErrors.numero_telefono = 'El número de teléfono es requerido';
 
+    // Validaciones condicionales según el tipo de cliente
+    if (formData.tipo_cliente === 'persona_natural') {
+      if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es requerido para persona natural';
+      if (!formData.apellido.trim()) newErrors.apellido = 'El apellido es requerido para persona natural';
+    } else if (formData.tipo_cliente === 'persona_juridica') {
+      if (!formData.razon_social.trim()) newErrors.razon_social = 'La razón social es requerida para persona jurídica';
+      if (!formData.nit.trim()) newErrors.nit = 'El NIT es requerido para persona jurídica';
+      if (!formData.representante_legal.trim()) newErrors.representante_legal = 'El representante legal es requerido para persona jurídica';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const cleanFormData = (data) => {
+    const cleaned = { ...data };
+    
+    // Asegurar que tipo_cliente esté presente
+    if (!cleaned.tipo_cliente) {
+      cleaned.tipo_cliente = 'persona_natural';
+    }
+    
+    // Convertir todos los valores null/undefined a cadenas vacías
+    Object.keys(cleaned).forEach(key => {
+      if (cleaned[key] === null || cleaned[key] === undefined) {
+        cleaned[key] = '';
+      }
+    });
+    
+    // Asegurar que las etiquetas sean un array
+    if (!Array.isArray(cleaned.etiquetas)) {
+      cleaned.etiquetas = [];
+    }
+    
+    return cleaned;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onSubmit(formData);
+      const cleanedData = cleanFormData(formData);
+      console.log('Datos limpios a enviar:', cleanedData);
+      onSubmit(cleanedData);
     }
   };
+
+  const tipoClienteOptions = [
+    { value: 'persona_natural', label: 'Persona Natural' },
+    { value: 'persona_juridica', label: 'Persona Jurídica' }
+  ];
+
+  const tipoEmpresaOptions = [
+    { value: 'SAS', label: 'SAS' },
+    { value: 'LTDA', label: 'LTDA' },
+    { value: 'SA', label: 'SA' },
+    { value: 'SRL', label: 'SRL' },
+    { value: 'EIRL', label: 'EIRL' },
+    { value: 'SOCIEDAD_COLECTIVA', label: 'Sociedad Colectiva' },
+    { value: 'SOCIEDAD_EN_COMANDITA', label: 'Sociedad en Comandita' },
+    { value: 'OTRO', label: 'Otro' }
+  ];
 
   const idiomaOptions = [
     { value: 'Español', label: 'Español (Predeterminado)' },
@@ -129,37 +196,131 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
         <div className="lg:col-span-2 space-y-6">
           {/* Información Personal */}
           <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Personal</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
+            
+            {/* Tipo de Cliente */}
+            <div className="mb-6">
+              <RadioGroup
+                name="tipo_cliente"
+                value={formData.tipo_cliente}
+                onChange={(e) => handleInputChange('tipo_cliente', e.target.value)}
+                options={tipoClienteOptions}
+                required
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                label="Nombre"
-                value={formData.nombre}
-                onChange={(e) => handleInputChange('nombre', e.target.value)}
-                required
-                error={errors.nombre}
-              />
-              <FormField
-                label="Apellido"
-                value={formData.apellido}
-                onChange={(e) => handleInputChange('apellido', e.target.value)}
-                required
-                error={errors.apellido}
-              />
-              <FormField
-                label="Segundo nombre"
-                value={formData.segundo_nombre}
-                onChange={(e) => handleInputChange('segundo_nombre', e.target.value)}
-              />
-              <FormField
-                label="Segundo Apellido"
-                value={formData.segundo_apellido}
-                onChange={(e) => handleInputChange('segundo_apellido', e.target.value)}
-              />
-              <FormField
-                label="Nacionalidad"
-                value={formData.nacionalidad}
-                onChange={(e) => handleInputChange('nacionalidad', e.target.value)}
-              />
+              {/* Campos para Persona Natural */}
+              {formData.tipo_cliente === 'persona_natural' && (
+                <>
+                  <FormField
+                    label="Nombre"
+                    value={formData.nombre}
+                    onChange={(e) => handleInputChange('nombre', e.target.value)}
+                    required
+                    error={errors.nombre}
+                  />
+                  <FormField
+                    label="Apellido"
+                    value={formData.apellido}
+                    onChange={(e) => handleInputChange('apellido', e.target.value)}
+                    required
+                    error={errors.apellido}
+                  />
+                  <FormField
+                    label="Segundo nombre"
+                    value={formData.segundo_nombre}
+                    onChange={(e) => handleInputChange('segundo_nombre', e.target.value)}
+                  />
+                  <FormField
+                    label="Segundo Apellido"
+                    value={formData.segundo_apellido}
+                    onChange={(e) => handleInputChange('segundo_apellido', e.target.value)}
+                  />
+                  <FormField
+                    label="Nacionalidad"
+                    value={formData.nacionalidad}
+                    onChange={(e) => handleInputChange('nacionalidad', e.target.value)}
+                  />
+                </>
+              )}
+
+              {/* Campos para Persona Jurídica */}
+              {formData.tipo_cliente === 'persona_juridica' && (
+                <>
+                  <FormField
+                    label="Razón Social"
+                    value={formData.razon_social}
+                    onChange={(e) => handleInputChange('razon_social', e.target.value)}
+                    required
+                    error={errors.razon_social}
+                  />
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <FormField
+                        label="NIT"
+                        value={formData.nit}
+                        onChange={(e) => handleInputChange('nit', e.target.value)}
+                        required
+                        error={errors.nit}
+                      />
+                    </div>
+                    <div className="w-20">
+                      <FormField
+                        label="DV"
+                        value={formData.digito_verificacion}
+                        onChange={(e) => handleInputChange('digito_verificacion', e.target.value)}
+                        maxLength="1"
+                      />
+                    </div>
+                  </div>
+                  <SelectField
+                    label="Tipo de Empresa"
+                    value={formData.tipo_empresa}
+                    onChange={(e) => handleInputChange('tipo_empresa', e.target.value)}
+                    options={tipoEmpresaOptions}
+                    placeholder="Seleccionar tipo"
+                  />
+                  <FormField
+                    label="Representante Legal"
+                    value={formData.representante_legal}
+                    onChange={(e) => handleInputChange('representante_legal', e.target.value)}
+                    required
+                    error={errors.representante_legal}
+                  />
+                  <FormField
+                    label="Cédula del Representante"
+                    value={formData.cedula_representante}
+                    onChange={(e) => handleInputChange('cedula_representante', e.target.value)}
+                  />
+                  <FormField
+                    label="Actividad Económica"
+                    value={formData.actividad_economica}
+                    onChange={(e) => handleInputChange('actividad_economica', e.target.value)}
+                  />
+                  <FormField
+                    label="Código CIIU"
+                    value={formData.codigo_ciiu}
+                    onChange={(e) => handleInputChange('codigo_ciiu', e.target.value)}
+                  />
+                  <FormField
+                    label="Fecha de Constitución"
+                    type="date"
+                    value={formData.fecha_constitucion}
+                    onChange={(e) => handleInputChange('fecha_constitucion', e.target.value)}
+                  />
+                  <FormField
+                    label="Capital Social"
+                    type="number"
+                    value={formData.capital_social}
+                    onChange={(e) => handleInputChange('capital_social', e.target.value)}
+                    step="0.01"
+                    min="0"
+                  />
+                </>
+              )}
+
+              {/* Campos comunes */}
               <SelectField
                 label="Idioma"
                 value={formData.idioma}

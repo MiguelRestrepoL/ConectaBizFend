@@ -3,11 +3,10 @@ import api from './auth.js';
 // Función para agregar un cliente
 export const addClient = async (clientData) => {
   try {
-    console.log('Enviando datos del cliente:', clientData);
+    console.log(clientData);
     
     const response = await api.post('/clients', clientData);
-    
-    console.log('Cliente creado exitosamente:', response.data);
+  
     return {
       success: true,
       data: response.data,
