@@ -16,37 +16,57 @@ export default function AgregarCliente() {
     try {
       // Preparar los datos para enviar
       const clientData = {
-        // Información personal
-        nombre: formData.nombre.trim(),
-        apellido: formData.apellido.trim(),
-        segundo_nombre: formData.segundo_nombre?.trim() || null,
-        segundo_apellido: formData.segundo_apellido?.trim() || null,
-        nacionalidad: formData.nacionalidad?.trim() || null,
-        idioma: formData.idioma,
+        // Tipo de cliente
+        tipo_cliente: formData.tipo_cliente || 'persona_natural',
+        
+        // Información personal (para persona natural)
+        nombre: formData.nombre?.trim() || '',
+        apellido: formData.apellido?.trim() || '',
+        segundo_nombre: formData.segundo_nombre?.trim() || '',
+        segundo_apellido: formData.segundo_apellido?.trim() || '',
+        nacionalidad: formData.nacionalidad?.trim() || '',
+        
+        // Información para persona jurídica
+        razon_social: formData.razon_social?.trim() || '',
+        nit: formData.nit?.trim() || '',
+        digito_verificacion: formData.digito_verificacion?.trim() || '',
+        representante_legal: formData.representante_legal?.trim() || '',
+        cedula_representante: formData.cedula_representante?.trim() || '',
+        tipo_empresa: formData.tipo_empresa || '',
+        actividad_economica: formData.actividad_economica?.trim() || '',
+        codigo_ciiu: formData.codigo_ciiu?.trim() || '',
+        fecha_constitucion: formData.fecha_constitucion || '',
+        capital_social: formData.capital_social || '',
+        
+        // Campos comunes
+        idioma: formData.idioma || 'Español',
         correo_electronico: formData.correo_electronico.trim().toLowerCase(),
         numero_telefono: formData.numero_telefono.trim(),
-        codigo_pais_telefono: formData.codigo_pais_telefono,
-        recibe_emails_marketing: formData.recibe_emails_marketing,
-        recibe_sms_marketing: formData.recibe_sms_marketing,
+        codigo_pais_telefono: formData.codigo_pais_telefono || '+57',
+        recibe_emails_marketing: formData.recibe_emails_marketing || false,
+        recibe_sms_marketing: formData.recibe_sms_marketing || false,
         
         // Información de dirección
-        direccion: formData.direccion?.trim() || null,
-        ciudad: formData.ciudad?.trim() || null,
-        pais_residencia: formData.pais_residencia?.trim() || null,
-        apartamento_local: formData.apartamento_local?.trim() || null,
-        codigo_postal: formData.codigo_postal?.trim() || null,
-        departamento_estado: formData.departamento_estado?.trim() || null,
-        telefono_residencia: formData.telefono_residencia?.trim() || null,
-        codigo_pais_residencia: formData.codigo_pais_residencia,
+        direccion: formData.direccion?.trim() || '',
+        ciudad: formData.ciudad?.trim() || '',
+        pais_residencia: formData.pais_residencia?.trim() || '',
+        apartamento_local: formData.apartamento_local?.trim() || '',
+        codigo_postal: formData.codigo_postal?.trim() || '',
+        departamento_estado: formData.departamento_estado?.trim() || '',
+        telefono_residencia: formData.telefono_residencia?.trim() || '',
+        codigo_pais_residencia: formData.codigo_pais_residencia || '+57',
         
         // Información fiscal
-        recaudar_impuestos: formData.recaudar_impuestos,
+        recaudar_impuestos: formData.recaudar_impuestos || 'recaudar',
         
-        // Notas y etiquetas (estos campos no están en el modelo, pero los incluimos por si se necesitan)
-        notas: formData.notas?.trim() || null,
-        etiquetas: formData.etiquetas.length > 0 ? formData.etiquetas.join(', ') : null
+        // Notas y etiquetas
+        notas: formData.notas?.trim() || '',
+        etiquetas: Array.isArray(formData.etiquetas) ? formData.etiquetas : []
       };
 
+      // Verificar los datos antes de enviar
+      console.log('Datos del cliente a enviar:', clientData);
+      
       // Usar la función addClient del archivo clients.js
       const result = await addClient(clientData);
 
