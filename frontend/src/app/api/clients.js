@@ -4,9 +4,9 @@ import api from './auth.js';
 export const addClient = async (clientData) => {
   try {
     console.log(clientData);
-    
+
     const response = await api.post('/clients', clientData);
-  
+
     return {
       success: true,
       data: response.data,
@@ -14,7 +14,7 @@ export const addClient = async (clientData) => {
     };
   } catch (error) {
     console.error('Error al crear cliente:', error);
-    
+
     // Manejar diferentes tipos de errores
     if (error.response) {
       // El servidor respondió con un código de error
@@ -42,15 +42,21 @@ export const addClient = async (clientData) => {
 // Función para obtener todos los clientes
 export const getClients = async (options = {}) => {
   try {
-    const { page = 1, limit = 10, search = '' } = options;
-    
+    const { page = 1, limit = 10, search = '', state = null } = options;
+
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...(search && { search: search.trim() })
     });
 
+    // Si hay texto de búsqueda, lo agregamos
+    if (search.trim()) params.append('search', search.trim());
+
+    // 👇 Solo agregamos `state` si no es null
+    if (state !== null) params.append('state', state);
+
     const response = await api.get(`/clients?${params.toString()}`);
+
     return {
       success: true,
       data: response.data
@@ -59,10 +65,14 @@ export const getClients = async (options = {}) => {
     console.error('Error al obtener clientes:', error);
     return {
       success: false,
-      error: error.response?.data?.error || error.response?.data?.message || 'Error al obtener clientes'
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Error al obtener clientes'
     };
   }
 };
+
 
 // Función para obtener un cliente por ID
 export const getClientById = async (id) => {

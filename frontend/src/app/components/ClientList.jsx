@@ -29,46 +29,41 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
   });
 
   // Cargar clientes
-  const loadClients = async (page = 1, search = '') => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const result = await getClients({
-        page,
-        limit: pagination.limit,
-        search
-      });
-      
-      if (result.success) {
-        const data = result.data;
-        setClients(data.clients || data.data || []);
-        setPagination(prev => ({
-          ...prev,
-          currentPage: data.currentPage || data.page || page,
-          totalPages: data.totalPages || Math.ceil((data.totalClients || data.total || 0) / pagination.limit),
-          totalClients: data.totalClients || data.total || 0
-        }));
-      } else {
-        // Manejo específico de errores de asociación
-        if (result.error && result.error.includes('Association with alias "user" does not exist')) {
-          setError('Error de configuración del servidor. Por favor, contacta al administrador.');
-        } else {
-          setError(result.error || 'Error al cargar clientes');
-        }
-      }
-    } catch (err) {
-      setError('Error de conexión al cargar clientes');
-      setDebugInfo({
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status
-      });
-      console.error('Error loading clients:', err);
-    } finally {
-      setLoading(false);
+  const loadClients = async (page = 1, search = '', state = true) => { // 👈 por defecto true
+  try {
+    setLoading(true);
+    setError(null);
+
+    const result = await getClients({
+      page,
+      limit: pagination.limit,
+      search,
+      state // 👈 enviamos el estado al backend
+    });
+
+    if (result.success) {
+      const data = result.data;
+      setClients(data.clients || data.data || []);
+      setPagination(prev => ({
+        ...prev,
+        currentPage: data.currentPage || data.page || page,
+        totalPages: data.totalPages || Math.ceil((data.totalClients || data.total || 0) / pagination.limit),
+        totalClients: data.totalClients || data.total || 0
+      }));
+    } else {
+      setError(result.error || 'Error al cargar clientes');
     }
-  };
+  } catch (err) {
+    setError('Error de conexión al cargar clientes');
+    setDebugInfo({
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Abrir modal de confirmación de eliminación
   const handleDeleteClick = (client) => {
@@ -96,18 +91,18 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
 
     try {
       const result = await deleteClient(deleteModal.client.id);
-      
+
       if (result.success) {
         // Recargar la lista de clientes
         await loadClients(pagination.currentPage, searchTerm);
-        
+
         // Cerrar modal
         setDeleteModal({
           isOpen: false,
           client: null,
           loading: false
         });
-        
+
         // Mostrar mensaje de éxito
         alert('Cliente eliminado exitosamente');
       } else {
@@ -140,33 +135,36 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
   // Manejar búsqueda con debounce
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    
+
     // Limpiar timeout anterior
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     // Crear nuevo timeout para búsqueda
     const timeout = setTimeout(() => {
       setPagination(prev => ({ ...prev, currentPage: 1 }));
       loadClients(1, value);
     }, 500);
-    
+
     setSearchTimeout(timeout);
   };
 
   // Manejar cambio de filtro
-  const handleFilterChange = (value) => {
-    setFilterBy(value);
-    // TODO: Implementar filtros en el backend si es necesario
-    // Por ahora solo filtramos en el frontend
-  };
+ const handleFilterChange = (value) => {
+  setFilterBy(value);
+  const stateFilter = value === 'inactivos' ? false : value === 'activos' ? true : null;
+  setPagination(prev => ({ ...prev, currentPage: 1 }));
+  loadClients(1, searchTerm, stateFilter);
+};
+
+
 
   // Filtrar clientes (solo para filtros que no están en el backend)
   const filteredClients = clients.filter(client => {
-    const matchesFilter = filterBy === 'all' || 
+    const matchesFilter = filterBy === 'all' ||
       (filterBy === 'marketing' && (client.recibe_emails_marketing || client.recibe_sms_marketing)) ||
-      (filterBy === 'taxes' && client.recaudar_impuestos);
+      (filterBy === 'taxes' && client.recaudar_impuestos) || (filterBy === 'desactivados' && !client.status);
 
     return matchesFilter;
   });
@@ -181,7 +179,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         console.log('✅ Conexión con backend exitosa');
         const userData = await response.json();
@@ -194,14 +192,14 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
     }
   };
 
-  // Cargar clientes al montar el componente y cuando cambie refreshTrigger
   useEffect(() => {
-    loadClients(pagination.currentPage, searchTerm);
-    // Probar conexión en desarrollo
-    if (process.env.NODE_ENV === 'development') {
-      testBackendConnection();
-    }
-  }, [refreshTrigger]);
+  // 👇 Aseguramos que por defecto se carguen solo los activos
+  loadClients(pagination.currentPage, searchTerm, filterBy === 'inactivos' ? false : filterBy === 'activos' ? true : null);
+  if (process.env.NODE_ENV === 'development') {
+    testBackendConnection();
+  }
+}, [refreshTrigger, filterBy]);
+
 
   // Limpiar timeout al desmontar
   useEffect(() => {
@@ -249,7 +247,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
         </div>
         <h3 className="text-lg font-semibold text-red-800 mb-2">Error al cargar clientes</h3>
         <p className="text-red-600 mb-4">{error}</p>
-        
+
         {/* Información de debug */}
         {debugInfo && (
           <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
@@ -263,7 +261,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
             </details>
           </div>
         )}
-        
+
         <div className="flex space-x-2">
           <button
             onClick={() => loadClients(pagination.currentPage, searchTerm)}
@@ -313,10 +311,11 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
               onChange={(e) => handleFilterChange(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
+              <option value="activos">Clientes activos</option>
+              <option value="inactivos">Clientes inactivos</option>
               <option value="all">Todos los clientes</option>
-              <option value="marketing">Con marketing</option>
-              <option value="taxes">Con impuestos</option>
             </select>
+
           </div>
         </div>
       </div>
@@ -380,8 +379,8 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
             {searchTerm || filterBy !== 'all' ? 'No se encontraron clientes' : 'No hay clientes registrados'}
           </h3>
           <p className="text-gray-500 mb-6">
-            {searchTerm || filterBy !== 'all' 
-              ? 'Intenta ajustar los filtros de búsqueda' 
+            {searchTerm || filterBy !== 'all'
+              ? 'Intenta ajustar los filtros de búsqueda'
               : 'Comienza agregando tu primer cliente'
             }
           </p>
@@ -418,7 +417,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
               {pagination.totalClients} clientes
             </span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Botón anterior */}
             <button
@@ -449,11 +448,10 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
                   <button
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg ${
-                      pageNum === pagination.currentPage
-                        ? 'bg-purple-600 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`px-3 py-2 text-sm font-medium rounded-lg ${pageNum === pagination.currentPage
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
                     {pageNum}
                   </button>
