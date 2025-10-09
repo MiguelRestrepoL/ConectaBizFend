@@ -22,6 +22,9 @@ const ClientCard = ({ client, onEdit, onDelete, onView }) => {
     return firstInitial + lastInitial;
   };
 
+  // 👇 Determinar si el cliente está activo o inactivo
+  const isActive = client.state !== false;
+
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200">
       {/* Header con avatar y nombre */}
@@ -38,6 +41,12 @@ const ClientCard = ({ client, onEdit, onDelete, onView }) => {
               {client.segundo_nombre && `${client.segundo_nombre} `}
               {client.segundo_apellido}
             </p>
+            {/* 👇 Badge de estado */}
+            {!isActive && (
+              <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">
+                Inactivo
+              </span>
+            )}
           </div>
         </div>
         
@@ -62,14 +71,25 @@ const ClientCard = ({ client, onEdit, onDelete, onView }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </button>
+          {/* 👇 Botón que cambia según el estado del cliente */}
           <button
             onClick={() => onDelete && onDelete(client)}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Eliminar cliente"
+            className={`p-2 rounded-lg transition-colors ${
+              isActive
+                ? 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+            }`}
+            title={isActive ? "Desactivar cliente" : "Activar cliente"}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
+            {isActive ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
           </button>
         </div>
       </div>

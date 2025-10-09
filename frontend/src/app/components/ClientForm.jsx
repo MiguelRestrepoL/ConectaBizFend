@@ -32,17 +32,17 @@ const actividadesEconomicas = {
 // Función para calcular el dígito de verificación
 const calcularDigitoVerificacion = (nit) => {
   if (!nit || nit.length === 0) return '';
-  
+
   const vpri = [3, 7, 13, 17, 19, 23, 29, 37, 41, 43, 47, 53, 59, 67, 71];
   let suma = 0;
   const nitString = nit.toString().replace(/\D/g, '');
-  
+
   for (let i = 0; i < nitString.length; i++) {
     suma += parseInt(nitString[nitString.length - 1 - i]) * vpri[i];
   }
-  
+
   const residuo = suma % 11;
-  
+
   if (residuo === 0 || residuo === 1) {
     return residuo.toString();
   } else {
@@ -227,17 +227,190 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     capital_social: '',
     notas: '',
     etiquetas: [],
-    estado: 'Activo' // Campo de estado añadido
+    estado: 'Activo'
   });
 
   const [errors, setErrors] = useState({});
   const [ciuuOptions, setCiuuOptions] = useState([]);
+  const [paises, setPaises] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
+  const [loadingGeo, setLoadingGeo] = useState(false);
 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
     }
   }, [initialData]);
+
+  // Cargar lista de países con geonameId al montar el componente
+  useEffect(() => {
+    const cargarPaises = async () => {
+      try {
+        setLoadingGeo(true);
+        const response = await fetch(
+          'https://restcountries.com/v3.1/all?fields=name,cca2,translations'
+        );
+        const data = await response.json();
+
+        const paisesConGeoId = await Promise.all(
+          data.map(async (pais) => {
+            try {
+              // Buscar el geonameId del país en GeoNames
+              const geoResponse = await fetch(
+                `https://secure.geonames.org/searchJSON?q=${encodeURIComponent(pais.name.common)}&featureCode=PCLI&maxRows=1&username=keivch1304`
+              );
+              const geoData = await geoResponse.json();
+              
+              return {
+                codigo: pais.cca2,
+                nombre: pais.translations?.spa?.common || pais.name.common,
+                nombreOriginal: pais.name.common,
+                geonameId: geoData.geonames && geoData.geonames.length > 0 ? geoData.geonames[0].geonameId : null
+              };
+            } catch (error) {
+              return {
+                codigo: pais.cca2,
+                nombre: pais.translations?.spa?.common || pais.name.common,
+                nombreOriginal: pais.name.common,
+                geonameId: null
+              };
+            }
+          })
+        );
+
+        const paisesOrdenados = paisesConGeoId.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        setPaises(paisesOrdenados);
+      } catch (error) {
+        console.log('Error cargando países:', error);
+      } finally {
+        setLoadingGeo(false);
+      }
+    };
+
+    cargarPaises();
+  }, []);
+
+  // Cargar departamentos cuando cambia el país
+  useEffect(() => {
+    const cargarDepartamentos = async () => {
+      if (!formData.pais_residencia) {
+        setDepartamentos([]);
+        setCiudades([]);
+        return;
+      }
+
+      try {
+        setLoadingGeo(true);
+        const paisSeleccionado = paises.find(p => p.nombre === formData.pais_residencia);
+
+        if (!paisSeleccionado || !paisSeleccionado.geonameId) {
+          console.log('No se encontró geonameId para el país seleccionado');
+          setDepartamentos([]);
+          return;
+        }
+
+        const response = await fetch(
+          `https://secure.geonames.org/childrenJSON?geonameId=${paisSeleccionado.geonameId}&username=keivch1304`
+        );
+        const data = await response.json();
+
+        if (data.geonames && data.geonames.length > 0) {
+          const deptosOrdenados = data.geonames
+            .map(dept => ({
+              geonameId: dept.geonameId,
+              nombre: dept.name,
+              adminName: dept.adminName1
+            }))
+            .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+          setDepartamentos(deptosOrdenados);
+        } else {
+          setDepartamentos([]);
+        }
+      } catch (error) {
+        console.log('Error cargando departamentos:', error);
+        setDepartamentos([]);
+      } finally {
+        setLoadingGeo(false);
+      }
+    };
+
+    cargarDepartamentos();
+  }, [formData.pais_residencia, paises]);
+
+  // Cargar ciudades cuando cambia el departamento
+  useEffect(() => {
+    const cargarCiudades = async () => {
+      if (!formData.departamento_estado) {
+        setCiudades([]);
+        return;
+      }
+
+      try {
+        setLoadingGeo(true);
+        const deptoSeleccionado = departamentos.find(d => d.nombre === formData.departamento_estado);
+
+        if (!deptoSeleccionado || !deptoSeleccionado.geonameId) {
+          console.log('No se encontró geonameId para el departamento seleccionado');
+          setCiudades([]);
+          return;
+        }
+
+        console.log('Buscando ciudades para departamento:', deptoSeleccionado);
+
+        // Primero intentamos con children
+        let response = await fetch(
+          `https://secure.geonames.org/childrenJSON?geonameId=${deptoSeleccionado.geonameId}&username=keivch1304`
+        );
+        let data = await response.json();
+
+        let ciudadesEncontradas = [];
+
+        // Si childrenJSON no devuelve resultados, intentamos con search
+        if (!data.geonames || data.geonames.length === 0) {
+          console.log('Intentando búsqueda alternativa de ciudades...');
+          response = await fetch(
+            `https://secure.geonames.org/searchJSON?adminCode1=${deptoSeleccionado.adminName || deptoSeleccionado.nombre}&country=${paises.find(p => p.nombre === formData.pais_residencia)?.codigo}&featureClass=P&maxRows=100&username=keivch1304`
+          );
+          data = await response.json();
+        }
+
+        if (data.geonames && data.geonames.length > 0) {
+          // Filtramos ciudades (feature class P = populated places)
+          ciudadesEncontradas = data.geonames
+            .filter(lugar => 
+              lugar.fcl === 'P' || 
+              lugar.fcode === 'PPL' || 
+              lugar.fcode === 'PPLA' || 
+              lugar.fcode === 'PPLC' || 
+              lugar.fcode === 'PPLA2' ||
+              lugar.fcode === 'PPLA3' ||
+              lugar.fcode === 'PPLA4'
+            )
+            .map(ciudad => ({
+              nombre: ciudad.name,
+              poblacion: ciudad.population || 0,
+              geonameId: ciudad.geonameId
+            }))
+            .sort((a, b) => b.poblacion - a.poblacion || a.nombre.localeCompare(b.nombre));
+
+          console.log(`Se encontraron ${ciudadesEncontradas.length} ciudades`);
+          setCiudades(ciudadesEncontradas);
+        } else {
+          console.log('No se encontraron ciudades');
+          setCiudades([]);
+        }
+      } catch (error) {
+        console.log('Error cargando ciudades:', error);
+        setCiudades([]);
+      } finally {
+        setLoadingGeo(false);
+      }
+    };
+
+    cargarCiudades();
+  }, [formData.departamento_estado, departamentos, formData.pais_residencia, paises]);
 
   // Calcular DV automáticamente cuando cambia el NIT
   useEffect(() => {
@@ -256,7 +429,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
   useEffect(() => {
     if (formData.actividad_economica && actividadesEconomicas[formData.actividad_economica]) {
       setCiuuOptions(actividadesEconomicas[formData.actividad_economica]);
-      // Si ya hay un CIIU seleccionado y no está en las nuevas opciones, limpiarlo
       const codigosDisponibles = actividadesEconomicas[formData.actividad_economica].map(c => c.codigo);
       if (formData.codigo_ciiu && !codigosDisponibles.includes(formData.codigo_ciiu)) {
         setFormData(prev => ({
@@ -271,12 +443,34 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
   const handleInputChange = (field, value) => {
     const processedValue = (value === null || value === undefined) ? '' : value;
-    
+
     setFormData(prev => ({
       ...prev,
       [field]: processedValue
     }));
-    
+
+    // Limpiar campos dependientes cuando cambia el país
+    if (field === 'pais_residencia') {
+      setFormData(prev => ({
+        ...prev,
+        [field]: processedValue,
+        departamento_estado: '',
+        ciudad: ''
+      }));
+      setDepartamentos([]);
+      setCiudades([]);
+    }
+
+    // Limpiar ciudad cuando cambia el departamento
+    if (field === 'departamento_estado') {
+      setFormData(prev => ({
+        ...prev,
+        [field]: processedValue,
+        ciudad: ''
+      }));
+      setCiudades([]);
+    }
+
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -293,7 +487,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     } else if (!/\S+@\S+\.\S+/.test(formData.correo_electronico)) {
       newErrors.correo_electronico = 'El correo electrónico no es válido';
     }
-    
+
     if (!formData.numero_telefono.trim()) {
       newErrors.numero_telefono = 'El número de teléfono es requerido';
     }
@@ -313,32 +507,31 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
   const cleanFormData = (data) => {
     const cleaned = { ...data };
-    
+
     if (!cleaned.tipo_cliente) {
       cleaned.tipo_cliente = 'persona_natural';
     }
-    
-    // Asegurar que el estado esté presente
+
     if (!cleaned.estado) {
       cleaned.estado = 'Activo';
     }
-    
+
     Object.keys(cleaned).forEach(key => {
       if (cleaned[key] === null || cleaned[key] === undefined) {
         cleaned[key] = '';
       }
     });
-    
+
     if (!Array.isArray(cleaned.etiquetas)) {
       cleaned.etiquetas = [];
     }
-    
+
     return cleaned;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       const cleanedData = cleanFormData(formData);
       console.log('Datos limpios a enviar:', cleanedData);
@@ -384,19 +577,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     { value: 'Français', label: 'Français' }
   ];
 
-  const departamentoOptions = [
-    { value: 'Antioquia', label: 'Antioquia' },
-    { value: 'Cundinamarca', label: 'Cundinamarca' },
-    { value: 'Valle del Cauca', label: 'Valle del Cauca' },
-    { value: 'Atlántico', label: 'Atlántico' },
-    { value: 'Santander', label: 'Santander' },
-    { value: 'Bolívar', label: 'Bolívar' },
-    { value: 'Nariño', label: 'Nariño' },
-    { value: 'Córdoba', label: 'Córdoba' },
-    { value: 'Tolima', label: 'Tolima' },
-    { value: 'Huila', label: 'Huila' }
-  ];
-
   const taxOptions = [
     { value: 'recaudar', label: 'Recaudar impuestos' },
     { value: 'recaudar_con_excepcion', label: 'Realizar recaudación de impuestos a menos que haya excepción' },
@@ -405,7 +585,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Indicador de estado */}
       {isEdit && (
         <div className={`p-4 rounded-lg ${formData.estado === 'Activo' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
           <div className="flex items-center justify-between">
@@ -430,7 +609,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
-            
+
             <div className="mb-6">
               <RadioGroup
                 name="tipo_cliente"
@@ -581,7 +760,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                 error={errors.numero_telefono}
               />
             </div>
-            
+
             <div className="mt-6">
               <h4 className="text-md font-medium text-gray-900 mb-3">Preferencias de Marketing</h4>
               <div className="space-y-2">
@@ -616,40 +795,79 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                 onChange={(e) => handleInputChange('direccion', e.target.value)}
               />
               <FormField
-                label="Ciudad"
-                value={formData.ciudad}
-                onChange={(e) => handleInputChange('ciudad', e.target.value)}
-              />
-              <SelectField
-                label="País de residencia"
-                value={formData.pais_residencia}
-                onChange={(e) => handleInputChange('pais_residencia', e.target.value)}
-                options={[
-                  { value: 'Colombia', label: '🇨🇴 Colombia' },
-                  { value: 'Estados Unidos', label: '🇺🇸 Estados Unidos' },
-                  { value: 'México', label: '🇲🇽 México' },
-                  { value: 'España', label: '🇪🇸 España' },
-                  { value: 'Argentina', label: '🇦🇷 Argentina' }
-                ]}
-                placeholder="Seleccionar país"
-              />
-              <FormField
                 label="Apartamento, local, etc"
                 value={formData.apartamento_local}
                 onChange={(e) => handleInputChange('apartamento_local', e.target.value)}
               />
+
+              {/* País de residencia */}
+              <SelectField
+                label="País de residencia"
+                value={formData.pais_residencia}
+                onChange={(e) => handleInputChange('pais_residencia', e.target.value)}
+                options={paises.map(p => ({ value: p.nombre, label: p.nombre }))}
+                placeholder={loadingGeo ? "Cargando países..." : "Seleccionar país"}
+                disabled={loadingGeo}
+              />
+
+              {/* Departamento/Estado */}
+              <div>
+                {departamentos.length > 0 ? (
+                  <SelectField
+                    label="Departamento, estado, etc"
+                    value={formData.departamento_estado}
+                    onChange={(e) => handleInputChange('departamento_estado', e.target.value)}
+                    options={departamentos.map(d => ({ value: d.nombre, label: d.nombre }))}
+                    placeholder={loadingGeo ? "Cargando departamentos..." : "Seleccionar departamento"}
+                    disabled={loadingGeo}
+                  />
+                ) : (
+                  <FormField
+                    label="Departamento, estado, etc"
+                    value={formData.departamento_estado}
+                    onChange={(e) => handleInputChange('departamento_estado', e.target.value)}
+                    placeholder={
+                      !formData.pais_residencia 
+                        ? "Primero seleccione un país" 
+                        : "Escriba el nombre del departamento"
+                    }
+                    disabled={!formData.pais_residencia}
+                  />
+                )}
+              </div>
+
+              {/* Ciudad */}
+              <div>
+                {ciudades.length > 0 ? (
+                  <SelectField
+                    label="Ciudad"
+                    value={formData.ciudad}
+                    onChange={(e) => handleInputChange('ciudad', e.target.value)}
+                    options={ciudades.map(c => ({ value: c.nombre, label: c.nombre }))}
+                    placeholder={loadingGeo ? "Cargando ciudades..." : "Seleccionar ciudad"}
+                    disabled={loadingGeo}
+                  />
+                ) : (
+                  <FormField
+                    label="Ciudad"
+                    value={formData.ciudad}
+                    onChange={(e) => handleInputChange('ciudad', e.target.value)}
+                    placeholder={
+                      !formData.departamento_estado 
+                        ? "Primero seleccione un departamento" 
+                        : "Escriba el nombre de la ciudad"
+                    }
+                    disabled={!formData.departamento_estado}
+                  />
+                )}
+              </div>
+
               <FormField
                 label="Código postal"
                 value={formData.codigo_postal}
                 onChange={(e) => handleInputChange('codigo_postal', e.target.value)}
               />
-              <SelectField
-                label="Departamento, estado, etc"
-                value={formData.departamento_estado}
-                onChange={(e) => handleInputChange('departamento_estado', e.target.value)}
-                options={departamentoOptions}
-                placeholder="Seleccionar departamento"
-              />
+
               <PhoneInput
                 label="Teléfono de la residencia"
                 value={formData.telefono_residencia}

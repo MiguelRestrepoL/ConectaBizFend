@@ -113,8 +113,14 @@ const OrderViewModal = ({ isOpen, onClose, order }) => {
                   </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Nombre:</span>
-                      <span className="font-medium">{order.cliente.nombre} {order.cliente.apellido}</span>
+                      <span className="text-gray-600">
+                        {order.cliente.persona_natural ? "Nombre:" : "NIT:"}
+                      </span>
+                      <span className="ml-2">
+                        {order.cliente.persona_natural
+                          ? `${order.cliente.persona_natural.nombre} ${order.cliente.persona_natural.apellido}`
+                          : order.cliente.persona_juridica?.nit}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Email:</span>
@@ -197,7 +203,7 @@ const OrderViewModal = ({ isOpen, onClose, order }) => {
                     Descripción del Pedido
                   </h3>
                   <div className="prose max-w-none">
-                    <div 
+                    <div
                       className="text-gray-700 bg-white p-4 rounded-lg border"
                       dangerouslySetInnerHTML={{ __html: order.descripcion }}
                     />

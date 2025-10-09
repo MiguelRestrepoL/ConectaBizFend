@@ -42,18 +42,18 @@ export const addClient = async (clientData) => {
 // Función para obtener todos los clientes
 export const getClients = async (options = {}) => {
   try {
-    const { page = 1, limit = 10, search = '', state = null } = options;
+    const { page = 1, limit = 10, search = '', includeInactive = false } = options;
 
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
+      includeInactive: includeInactive.toString() // 👈 Siempre enviamos este parámetro
     });
 
     // Si hay texto de búsqueda, lo agregamos
-    if (search.trim()) params.append('search', search.trim());
-
-    // 👇 Solo agregamos `state` si no es null
-    if (state !== null) params.append('state', state);
+    if (search.trim()) {
+      params.append('search', search.trim());
+    }
 
     const response = await api.get(`/clients?${params.toString()}`);
 
@@ -126,10 +126,33 @@ export const deleteClient = async (id) => {
   }
 };
 
+export const updateClientState = async (clientId, state) => {
+  try {
+    const response = await api.patch(`/clients/${clientId}/state`, {
+      state: state
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    console.error('Error al actualizar estado del cliente:', error);
+    return {
+      success: false,
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Error al actualizar estado del cliente'
+    };
+  }
+};
+
 export default {
   addClient,
   getClients,
   getClientById,
   updateClient,
-  deleteClient
+  deleteClient,
+  updateClientState
 };
