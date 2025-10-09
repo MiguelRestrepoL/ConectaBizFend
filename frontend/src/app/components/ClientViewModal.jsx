@@ -19,32 +19,33 @@ const ClientViewModal = ({ isOpen, onClose, client }) => {
   };
 
   const getInitials = (client) => {
+    console.log(client);
     if (client.tipo_cliente === 'persona_juridica') {
       // Para persona jurídica, usar las primeras letras de la razón social
       return client.razon_social ? client.razon_social.substring(0, 2).toUpperCase() : 'PJ';
     } else {
       // Para persona natural, usar iniciales del nombre y apellido
-      const firstInitial = client.nombre ? client.nombre.charAt(0).toUpperCase() : '';
-      const lastInitial = client.apellido ? client.apellido.charAt(0).toUpperCase() : '';
+      const firstInitial = client.persona_natural.nombre ? client.persona_natural.nombre.charAt(0).toUpperCase() : '';
+      const lastInitial = client.persona_natural.apellido ? client.persona_natural.apellido.charAt(0).toUpperCase() : '';
       return firstInitial + lastInitial;
     }
   };
 
   const getDisplayName = (client) => {
     if (client.tipo_cliente === 'persona_juridica') {
-      return client.razon_social || 'Persona Jurídica';
+      return client.persona_juridica.razon_social || 'Persona Jurídica';
     } else {
-      return `${client.nombre || ''} ${client.apellido || ''}`.trim() || 'Persona Natural';
+      return `${client.persona_natural.nombre || ''} ${client.persona_natural.apellido || ''}`.trim() || 'Persona Natural';
     }
   };
 
   const getSubtitle = (client) => {
     if (client.tipo_cliente === 'persona_juridica') {
-      return client.nit ? `NIT: ${client.nit}` : 'Persona Jurídica';
+      return client.persona_juridica.nit ? `NIT: ${client.persona_juridica.nit}` : 'Persona Jurídica';
     } else {
       const parts = [];
-      if (client.segundo_nombre) parts.push(client.segundo_nombre);
-      if (client.segundo_apellido) parts.push(client.segundo_apellido);
+      if (client.persona_natural.segundo_nombre) parts.push(client.persona_natural.segundo_nombre);
+      if (client.persona_natural.segundo_apellido) parts.push(client.persona_natural.segundo_apellido);
       return parts.join(' ');
     }
   };
@@ -120,33 +121,33 @@ const ClientViewModal = ({ isOpen, onClose, client }) => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Nombre:</span>
-                      <span className="font-medium">{client.nombre || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_natural.nombre || 'No disponible'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Apellido:</span>
-                      <span className="font-medium">{client.apellido || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_natural.apellido || 'No disponible'}</span>
                     </div>
-                    {client.segundo_nombre && (
+                    {client.persona_natural.segundo_nombre && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Segundo nombre:</span>
-                        <span className="font-medium">{client.segundo_nombre}</span>
+                        <span className="font-medium">{client.persona_natural.segundo_nombre}</span>
                       </div>
                     )}
-                    {client.segundo_apellido && (
+                    {client.persona_natural.segundo_apellido && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Segundo apellido:</span>
-                        <span className="font-medium">{client.segundo_apellido}</span>
+                        <span className="font-medium">{client.persona_natural.segundo_apellido}</span>
                       </div>
                     )}
-                    {client.nacionalidad && (
+                    {client.persona_natural.nacionalidad && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Nacionalidad:</span>
-                        <span className="font-medium">{client.nacionalidad}</span>
+                        <span className="font-medium">{client.persona_natural.nacionalidad}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Idioma:</span>
-                      <span className="font-medium">{client.idioma || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_natural.idioma || 'No disponible'}</span>
                     </div>
                   </div>
                 </div>
@@ -162,61 +163,61 @@ const ClientViewModal = ({ isOpen, onClose, client }) => {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Razón Social:</span>
-                      <span className="font-medium">{client.razon_social || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_juridica.razon_social || 'No disponible'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">NIT:</span>
-                      <span className="font-medium">{client.nit || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_juridica.nit || 'No disponible'}</span>
                     </div>
-                    {client.digito_verificacion && (
+                    {client.persona_juridica.digito_verificacion && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Dígito de Verificación:</span>
-                        <span className="font-medium">{client.digito_verificacion}</span>
+                        <span className="font-medium">{client.persona_juridica.digito_verificacion}</span>
                       </div>
                     )}
-                    {client.tipo_empresa && (
+                    {client.persona_juridica.tipo_empresa && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Tipo de Empresa:</span>
-                        <span className="font-medium">{client.tipo_empresa}</span>
+                        <span className="font-medium">{client.persona_juridica.tipo_empresa}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Representante Legal:</span>
-                      <span className="font-medium">{client.representante_legal || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_juridica.representante_legal || 'No disponible'}</span>
                     </div>
-                    {client.cedula_representante && (
+                    {client.persona_juridica.cedula_representante && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Cédula Representante:</span>
-                        <span className="font-medium">{client.cedula_representante}</span>
+                        <span className="font-medium">{client.persona_juridica.cedula_representante}</span>
                       </div>
                     )}
-                    {client.actividad_economica && (
+                    {client.persona_juridica.actividad_economica && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Actividad Económica:</span>
-                        <span className="font-medium text-right max-w-xs">{client.actividad_economica}</span>
+                        <span className="font-medium text-right max-w-xs">{client.persona_juridica.actividad_economica}</span>
                       </div>
                     )}
-                    {client.codigo_ciiu && (
+                    {client.persona_juridica.codigo_ciiu && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Código CIIU:</span>
-                        <span className="font-medium">{client.codigo_ciiu}</span>
+                        <span className="font-medium">{client.persona_juridica.codigo_ciiu}</span>
                       </div>
                     )}
-                    {client.fecha_constitucion && (
+                    {client.persona_juridica.fecha_constitucion && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Fecha de Constitución:</span>
-                        <span className="font-medium">{new Date(client.fecha_constitucion).toLocaleDateString('es-ES')}</span>
+                        <span className="font-medium">{new Date(client.persona_juridica.fecha_constitucion).toLocaleDateString('es-ES')}</span>
                       </div>
                     )}
-                    {client.capital_social && (
+                    {client.persona_juridica.capital_social && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Capital Social:</span>
-                        <span className="font-medium">${Number(client.capital_social).toLocaleString('es-ES')}</span>
+                        <span className="font-medium">${Number(client.persona_juridica.capital_social).toLocaleString('es-ES')}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
                       <span className="text-gray-600">Idioma:</span>
-                      <span className="font-medium">{client.idioma || 'No disponible'}</span>
+                      <span className="font-medium">{client.persona_juridica.idioma || 'No disponible'}</span>
                     </div>
                   </div>
                 </div>

@@ -130,12 +130,8 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
     }
   ];
 
-  // Función para manejar el logout
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
 
-  const handleLogoutConfirm = async () => {
+  const handleLogout = async () => {
     setLogoutLoading(true);
     try {
       await authService.logout();
@@ -223,19 +219,6 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
           </button>
         </div>
       </div>
-
-      {/* Modal de confirmación de logout */}
-      <ConfirmModal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
-        onConfirm={handleLogoutConfirm}
-        title="Cerrar Sesión"
-        message="¿Estás seguro de que quieres cerrar sesión? Tendrás que iniciar sesión nuevamente para acceder a la aplicación."
-        confirmText="Cerrar Sesión"
-        cancelText="Cancelar"
-        type="warning"
-        loading={logoutLoading}
-      />
     </div>
   );
 };

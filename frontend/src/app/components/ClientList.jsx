@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ClientCard from './ClientCard';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import ClientViewModal from './ClientViewModal';
-import { getClients, deleteClient } from '../api/clients';
+import { getClients, deleteClient, updateClientState } from '../api/clients';
 
 const ClientList = ({ onEdit, onView, refreshTrigger }) => {
   const [clients, setClients] = useState([]);
@@ -10,7 +10,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
   const [error, setError] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterBy, setFilterBy] = useState('all');
+  const [filterBy, setFilterBy] = useState('activos'); // 👈 Cambiado a 'activos' por defecto
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -21,25 +21,27 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
     client: null,
-    loading: false
+    loading: false,
+    isActivation: false // 👈 Nuevo campo para saber si es activación
   });
   const [viewModal, setViewModal] = useState({
     isOpen: false,
     client: null
   });
 
-  // Cargar clientes
+  // Cargar clientes - siempre trae TODOS del backend
   const loadClients = async (page = 1, search = '') => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await getClients({
         page,
         limit: pagination.limit,
-        search
+        search,
+        includeInactive: true // 👈 Siempre traemos todos
       });
-      
+
       if (result.success) {
         const data = result.data;
         setClients(data.clients || data.data || []);
@@ -50,12 +52,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
           totalClients: data.totalClients || data.total || 0
         }));
       } else {
-        // Manejo específico de errores de asociación
-        if (result.error && result.error.includes('Association with alias "user" does not exist')) {
-          setError('Error de configuración del servidor. Por favor, contacta al administrador.');
-        } else {
-          setError(result.error || 'Error al cargar clientes');
-        }
+        setError(result.error || 'Error al cargar clientes');
       }
     } catch (err) {
       setError('Error de conexión al cargar clientes');
@@ -64,18 +61,18 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
         response: err.response?.data,
         status: err.response?.status
       });
-      console.error('Error loading clients:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Abrir modal de confirmación de eliminación
+  // Abrir modal de confirmación de eliminación o activación
   const handleDeleteClick = (client) => {
     setDeleteModal({
       isOpen: true,
       client: client,
-      loading: false
+      loading: false,
+      isActivation: !client.state // 👈 Si está inactivo, es activación
     });
   };
 
@@ -84,39 +81,58 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
     setDeleteModal({
       isOpen: false,
       client: null,
-      loading: false
+      loading: false,
+      isActivation: false
     });
   };
 
-  // Confirmar eliminación
+  // Confirmar eliminación o activación
   const handleDeleteConfirm = async () => {
     if (!deleteModal.client) return;
 
     setDeleteModal(prev => ({ ...prev, loading: true }));
 
     try {
-      const result = await deleteClient(deleteModal.client.id);
+      let result;
       
+      if (deleteModal.isActivation) {
+        // Activar cliente (cambiar state a true)
+        result = await updateClientState(deleteModal.client.id, true);
+      } else {
+        // Desactivar cliente (soft delete - cambiar state a false)
+        result = await deleteClient(deleteModal.client.id);
+      }
+
       if (result.success) {
         // Recargar la lista de clientes
         await loadClients(pagination.currentPage, searchTerm);
-        
+
         // Cerrar modal
         setDeleteModal({
           isOpen: false,
           client: null,
-          loading: false
+          loading: false,
+          isActivation: false
         });
-        
+
         // Mostrar mensaje de éxito
-        alert('Cliente eliminado exitosamente');
+        const message = deleteModal.isActivation 
+          ? 'Cliente activado exitosamente' 
+          : 'Cliente desactivado exitosamente';
+        alert(message);
       } else {
-        alert('Error al eliminar cliente: ' + result.error);
+        const errorMsg = deleteModal.isActivation 
+          ? 'Error al activar cliente: ' 
+          : 'Error al desactivar cliente: ';
+        alert(errorMsg + result.error);
         setDeleteModal(prev => ({ ...prev, loading: false }));
       }
     } catch (err) {
-      alert('Error al eliminar cliente');
-      console.error('Error deleting client:', err);
+      const errorMsg = deleteModal.isActivation 
+        ? 'Error al activar cliente' 
+        : 'Error al desactivar cliente';
+      alert(errorMsg);
+      console.error('Error updating client state:', err);
       setDeleteModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -140,35 +156,38 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
   // Manejar búsqueda con debounce
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    
+
     // Limpiar timeout anterior
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     // Crear nuevo timeout para búsqueda
     const timeout = setTimeout(() => {
       setPagination(prev => ({ ...prev, currentPage: 1 }));
       loadClients(1, value);
     }, 500);
-    
+
     setSearchTimeout(timeout);
   };
 
-  // Manejar cambio de filtro
+  // Manejar cambio de filtro - solo cambia el estado local
   const handleFilterChange = (value) => {
     setFilterBy(value);
-    // TODO: Implementar filtros en el backend si es necesario
-    // Por ahora solo filtramos en el frontend
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
   };
 
-  // Filtrar clientes (solo para filtros que no están en el backend)
+  // Filtrar clientes en el frontend según el filtro seleccionado
   const filteredClients = clients.filter(client => {
-    const matchesFilter = filterBy === 'all' || 
-      (filterBy === 'marketing' && (client.recibe_emails_marketing || client.recibe_sms_marketing)) ||
-      (filterBy === 'taxes' && client.recaudar_impuestos);
-
-    return matchesFilter;
+    // Filtrar por estado (activo/inactivo)
+    if (filterBy === 'activos') {
+      return client.state === true;
+    }
+    if (filterBy === 'inactivos') {
+      return client.state === false;
+    }
+    // 'all' muestra todos
+    return true;
   });
 
   // Función para probar la conexión con el backend
@@ -181,7 +200,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
           'Content-Type': 'application/json'
         }
       });
-      
+
       if (response.ok) {
         console.log('✅ Conexión con backend exitosa');
         const userData = await response.json();
@@ -194,10 +213,10 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
     }
   };
 
-  // Cargar clientes al montar el componente y cuando cambie refreshTrigger
+  // Cargar clientes al montar y cuando cambie refreshTrigger
   useEffect(() => {
     loadClients(pagination.currentPage, searchTerm);
-    // Probar conexión en desarrollo
+    
     if (process.env.NODE_ENV === 'development') {
       testBackendConnection();
     }
@@ -249,8 +268,7 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
         </div>
         <h3 className="text-lg font-semibold text-red-800 mb-2">Error al cargar clientes</h3>
         <p className="text-red-600 mb-4">{error}</p>
-        
-        {/* Información de debug */}
+
         {debugInfo && (
           <div className="mb-4 p-3 bg-gray-100 rounded-lg text-sm">
             <details>
@@ -263,8 +281,8 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
             </details>
           </div>
         )}
-        
-        <div className="flex space-x-2">
+
+        <div className="flex space-x-2 justify-center">
           <button
             onClick={() => loadClients(pagination.currentPage, searchTerm)}
             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
@@ -313,9 +331,9 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
               onChange={(e) => handleFilterChange(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
+              <option value="activos">Clientes activos</option>
+              <option value="inactivos">Clientes inactivos</option>
               <option value="all">Todos los clientes</option>
-              <option value="marketing">Con marketing</option>
-              <option value="taxes">Con impuestos</option>
             </select>
           </div>
         </div>
@@ -327,12 +345,30 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total</p>
-              <p className="text-2xl font-semibold text-gray-900">{pagination.totalClients}</p>
+              <p className="text-sm font-medium text-gray-500">Total Activos</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {clients.filter(c => c.state === true).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-500">Total Inactivos</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {clients.filter(c => c.state === false).length}
+              </p>
             </div>
           </div>
         </div>
@@ -341,29 +377,13 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-500">Con Marketing</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {clients.filter(c => c.recibe_emails_marketing || c.recibe_sms_marketing).length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Con Impuestos</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {clients.filter(c => c.recaudar_impuestos).length}
               </p>
             </div>
           </div>
@@ -380,8 +400,8 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
             {searchTerm || filterBy !== 'all' ? 'No se encontraron clientes' : 'No hay clientes registrados'}
           </h3>
           <p className="text-gray-500 mb-6">
-            {searchTerm || filterBy !== 'all' 
-              ? 'Intenta ajustar los filtros de búsqueda' 
+            {searchTerm || filterBy !== 'all'
+              ? 'Intenta ajustar los filtros de búsqueda'
               : 'Comienza agregando tu primer cliente'
             }
           </p>
@@ -413,12 +433,12 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
         <div className="mt-8 flex items-center justify-between bg-white rounded-lg p-4 shadow-sm border border-gray-200">
           <div className="flex items-center text-sm text-gray-700">
             <span>
-              Mostrando {((pagination.currentPage - 1) * pagination.limit) + 1} a{' '}
-              {Math.min(pagination.currentPage * pagination.limit, pagination.totalClients)} de{' '}
-              {pagination.totalClients} clientes
+              Mostrando {filteredClients.length > 0 ? 1 : 0} a{' '}
+              {filteredClients.length} de{' '}
+              {filteredClients.length} clientes {filterBy !== 'all' && `(${filterBy})`}
             </span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Botón anterior */}
             <button
@@ -449,11 +469,10 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
                   <button
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg ${
-                      pageNum === pagination.currentPage
-                        ? 'bg-purple-600 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`px-3 py-2 text-sm font-medium rounded-lg ${pageNum === pagination.currentPage
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
                     {pageNum}
                   </button>
@@ -475,13 +494,14 @@ const ClientList = ({ onEdit, onView, refreshTrigger }) => {
         </div>
       )}
 
-      {/* Modal de confirmación de eliminación */}
+      {/* Modal de confirmación de eliminación/activación */}
       <DeleteConfirmModal
         isOpen={deleteModal.isOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         client={deleteModal.client}
         loading={deleteModal.loading}
+        isActivation={deleteModal.isActivation}
       />
 
       {/* Modal de visualización de cliente */}

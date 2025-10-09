@@ -295,7 +295,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                 {/* Cliente */}
                 <SelectField
                   label="Usuario respectivo del pedido"
-                  value={formData.cliente_id}
+                  value={formData.user_id}
                   onChange={(e) => handleInputChange('cliente_id', e.target.value)}
                   options={clientOptions}
                   placeholder={loadingClients ? "Cargando clientes..." : "Seleccionar cliente"}
