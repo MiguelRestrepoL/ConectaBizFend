@@ -5,6 +5,7 @@ import OrderViewModal from './OrderViewModal';
 import AlertModal from './AlertModal';
 import { getOrders, deleteOrder } from '../api/orders';
 
+
 const OrderList = ({ onEdit, onView, refreshTrigger }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +18,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
     totalOrders: 0,
     limit: 12
   });
+
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [deleteOrderModal, setDeleteOrderModal] = useState({
     isOpen: false,
@@ -49,7 +51,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const result = await getOrders({
         page,
         limit: pagination.limit,
@@ -57,11 +59,11 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
       });
 
       console.log('Resultado completo:', result);
-      
+
       if (result.success) {
         const data = result.data;
         console.log('Datos de la respuesta:', data);
-        
+
         // Manejar diferentes estructuras de respuesta
         let ordersArray = [];
         if (Array.isArray(data)) {
@@ -77,10 +79,10 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
           // Si data tiene una propiedad pedidos
           ordersArray = data.pedidos;
         }
-        
+
         console.log('Array de pedidos extraído:', ordersArray);
         setOrders(ordersArray);
-        
+
         setPagination(prev => ({
           ...prev,
           currentPage: data.currentPage || data.page || page,
@@ -134,18 +136,18 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
 
     try {
       const result = await deleteOrder(deleteOrderModal.order.id);
-      
+
       if (result.success) {
         // Recargar la lista de pedidos
         await loadOrders(pagination.currentPage, searchTerm);
-        
+
         // Cerrar modal
         setDeleteOrderModal({
           isOpen: false,
           order: null,
           loading: false
         });
-        
+
         // Mostrar mensaje de éxito
         showAlert('Éxito', 'Pedido eliminado exitosamente', 'success');
       } else {
@@ -178,18 +180,18 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
   // Manejar búsqueda con debounce
   const handleSearchChange = (value) => {
     setSearchTerm(value);
-    
+
     // Limpiar timeout anterior
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     // Crear nuevo timeout para búsqueda
     const timeout = setTimeout(() => {
       setPagination(prev => ({ ...prev, currentPage: 1 }));
       loadOrders(1, value);
     }, 500);
-    
+
     setSearchTimeout(timeout);
   };
 
@@ -202,7 +204,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
 
   // Filtrar pedidos (solo para filtros que no están en el backend)
   const filteredOrders = orders.filter(order => {
-    const matchesFilter = filterBy === 'all' || 
+    const matchesFilter = filterBy === 'all' ||
       (filterBy === 'preparando' && order.estado === 'preparando') ||
       (filterBy === 'enviado' && order.estado === 'enviado') ||
       (filterBy === 'entregado' && order.estado === 'entregado');
@@ -261,7 +263,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
         </div>
         <h3 className="text-lg font-semibold text-red-800 mb-2">Error al cargar pedidos</h3>
         <p className="text-red-600 mb-4">{error}</p>
-        
+
         <div className="flex space-x-2">
           <button
             onClick={() => loadOrders(pagination.currentPage, searchTerm)}
@@ -394,8 +396,8 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
             {searchTerm || filterBy !== 'all' ? 'No se encontraron pedidos' : 'No hay pedidos registrados'}
           </h3>
           <p className="text-gray-500 mb-6">
-            {searchTerm || filterBy !== 'all' 
-              ? 'Intenta ajustar los filtros de búsqueda' 
+            {searchTerm || filterBy !== 'all'
+              ? 'Intenta ajustar los filtros de búsqueda'
               : 'Comienza creando tu primer pedido'
             }
           </p>
@@ -432,7 +434,7 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
               {pagination.totalOrders} pedidos
             </span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Botón anterior */}
             <button
@@ -463,11 +465,10 @@ const OrderList = ({ onEdit, onView, refreshTrigger }) => {
                   <button
                     key={pageNum}
                     onClick={() => goToPage(pageNum)}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg ${
-                      pageNum === pagination.currentPage
+                    className={`px-3 py-2 text-sm font-medium rounded-lg ${pageNum === pagination.currentPage
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     {pageNum}
                   </button>
