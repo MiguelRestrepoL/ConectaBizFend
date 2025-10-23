@@ -193,7 +193,7 @@ const TagInput = ({ value = [], onChange, placeholder }) => {
 };
 
 const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = false }) => {
-  const [formData, setFormData] = useState(initialData || {
+  const [formData, setFormData] = useState({
     tipo_cliente: 'persona_natural',
     nombre: '',
     apellido: '',
@@ -237,9 +237,29 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
   const [ciudades, setCiudades] = useState([]);
   const [loadingGeo, setLoadingGeo] = useState(false);
 
+  // Actualizado: Este useEffect ahora maneja correctamente los datos iniciales
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      console.log('Datos iniciales recibidos:', initialData);
+      
+      // Verificar si los datos ya vienen procesados (formato plano)
+      // o si necesitan ser extraídos de la estructura anidada
+      const hasNestedStructure = initialData.tipo_cliente && 
+        (initialData.persona_natural || initialData.persona_juridica);
+      
+      if (hasNestedStructure) {
+        // Los datos vienen en estructura anidada, no hacer nada
+        // porque ya fueron procesados por convertClientToFormData
+        setFormData(initialData);
+      } else {
+        // Los datos ya vienen en formato plano
+        setFormData(prev => ({
+          ...prev,
+          ...initialData
+        }));
+      }
+      
+      console.log('FormData establecido');
     }
   }, [initialData]);
 

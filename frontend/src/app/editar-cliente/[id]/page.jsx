@@ -12,7 +12,7 @@ export default function EditarCliente() {
   const router = useRouter();
   const params = useParams();
   const clientId = params.id;
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [client, setClient] = useState(null);
@@ -22,13 +22,13 @@ export default function EditarCliente() {
   useEffect(() => {
     const loadClient = async () => {
       if (!clientId) return;
-      
+
       try {
         setLoading(true);
         setError(null);
-        
+
         const result = await getClientById(clientId);
-        
+
         if (result.success) {
           console.log('Cliente cargado:', result.data);
           setClient(result.data);
@@ -49,40 +49,51 @@ export default function EditarCliente() {
   // Manejar envío del formulario
   const handleSubmit = async (formData) => {
     setSaving(true);
-    
+
     try {
-      // Preparar los datos para enviar
+      // Preparar los datos base del cliente
       const clientData = {
-        // Información personal
-        nombre: formData.nombre.trim(),
-        apellido: formData.apellido.trim(),
-        segundo_nombre: formData.segundo_nombre?.trim() || null,
-        segundo_apellido: formData.segundo_apellido?.trim() || null,
-        nacionalidad: formData.nacionalidad?.trim() || null,
-        idioma: formData.idioma,
+        // Información de contacto
         correo_electronico: formData.correo_electronico.trim().toLowerCase(),
         numero_telefono: formData.numero_telefono.trim(),
         codigo_pais_telefono: formData.codigo_pais_telefono,
-        recibe_emails_marketing: formData.recibe_emails_marketing,
-        recibe_sms_marketing: formData.recibe_sms_marketing,
-        
+
         // Información de dirección
         direccion: formData.direccion?.trim() || null,
         ciudad: formData.ciudad?.trim() || null,
         pais_residencia: formData.pais_residencia?.trim() || null,
-        apartamento_local: formData.apartamento_local?.trim() || null,
         codigo_postal: formData.codigo_postal?.trim() || null,
         departamento_estado: formData.departamento_estado?.trim() || null,
-        telefono_residencia: formData.telefono_residencia?.trim() || null,
-        codigo_pais_residencia: formData.codigo_pais_residencia,
-        
+
         // Información fiscal
         recaudar_impuestos: formData.recaudar_impuestos,
-        
-        // Notas y etiquetas
-        notas: formData.notas?.trim() || null,
-        etiquetas: formData.etiquetas.length > 0 ? formData.etiquetas.join(', ') : null
+
+        // Tipo de cliente
+        tipo_cliente: formData.tipo_cliente || 'persona_natural'
       };
+
+      // Agregar datos según el tipo de cliente (formato plano)
+      if (clientData.tipo_cliente === 'persona_natural') {
+        clientData.nombre = formData.nombre.trim();
+        clientData.apellido = formData.apellido.trim();
+        clientData.segundo_nombre = formData.segundo_nombre?.trim() || '';
+        clientData.segundo_apellido = formData.segundo_apellido?.trim() || '';
+        clientData.nacionalidad = formData.nacionalidad?.trim() || null;
+        clientData.idioma = formData.idioma || 'Español';
+      } else if (clientData.tipo_cliente === 'persona_juridica') {
+        clientData.razon_social = formData.razon_social?.trim() || '';
+        clientData.nit = formData.nit?.trim() || '';
+        clientData.digito_verificacion = formData.digito_verificacion?.trim() || '';
+        clientData.tipo_empresa = formData.tipo_empresa || '';
+        clientData.representante_legal = formData.representante_legal?.trim() || '';
+        clientData.cedula_representante = formData.cedula_representante?.trim() || '';
+        clientData.fecha_constitucion = formData.fecha_constitucion || null;
+        clientData.actividad_economica = formData.actividad_economica?.trim() || '';
+        clientData.codigo_ciiu = formData.codigo_ciiu?.trim() || '';
+        clientData.capital_social = formData.capital_social || null;
+      }
+
+      console.log('Datos a enviar al backend:', clientData);
 
       // Usar la función updateClient del archivo clients.js
       const result = await updateClient(clientId, clientData);
@@ -90,7 +101,7 @@ export default function EditarCliente() {
       if (result.success) {
         // Mostrar mensaje de éxito
         alert(result.message || 'Cliente actualizado exitosamente');
-        
+
         // Redirigir a la página de clientes
         router.push('/clientes');
       } else {
@@ -106,36 +117,57 @@ export default function EditarCliente() {
   };
 
   // Convertir datos del cliente al formato del formulario
+  // Convertir datos del cliente al formato del formulario
   const convertClientToFormData = (clientData) => {
     console.log('Convirtiendo datos del cliente:', clientData);
-    
+
     // Los datos del cliente están dentro de clientData.client
     const client = clientData.client || clientData;
-    
+
+    // Datos base del formulario
     const formData = {
-      nombre: client.nombre || '',
-      apellido: client.apellido || '',
-      segundo_nombre: client.segundo_nombre || '',
-      segundo_apellido: client.segundo_apellido || '',
-      nacionalidad: client.nacionalidad || '',
-      idioma: client.idioma || 'Español',
       correo_electronico: client.correo_electronico || '',
       numero_telefono: client.numero_telefono || '',
       codigo_pais_telefono: client.codigo_pais_telefono || '+57',
-      recibe_emails_marketing: client.recibe_emails_marketing || false,
-      recibe_sms_marketing: client.recibe_sms_marketing || false,
       direccion: client.direccion || '',
       ciudad: client.ciudad || '',
       pais_residencia: client.pais_residencia || '',
-      apartamento_local: client.apartamento_local || '',
       codigo_postal: client.codigo_postal || '',
       departamento_estado: client.departamento_estado || '',
-      telefono_residencia: client.telefono_residencia || '',
-      codigo_pais_residencia: client.codigo_pais_residencia || '+57',
       recaudar_impuestos: client.recaudar_impuestos || 'recaudar',
-      notas: client.notas || '',
-      etiquetas: client.etiquetas ? client.etiquetas.split(', ').filter(tag => tag.trim()) : []
+      tipo_cliente: client.tipo_cliente || 'persona_natural',
+      apartamento_local: '',
+      telefono_residencia: '',
+      codigo_pais_residencia: '+57',
+      recibe_emails_marketing: false,
+      recibe_sms_marketing: false,
+      notas: '',
+      etiquetas: []
     };
+
+    // Agregar datos específicos según el tipo de cliente
+    if (client.tipo_cliente === 'persona_natural' && client.persona_natural) {
+      const pn = client.persona_natural;
+      formData.nombre = pn.nombre || '';
+      formData.apellido = pn.apellido || '';
+      formData.segundo_nombre = pn.segundo_nombre || '';
+      formData.segundo_apellido = pn.segundo_apellido || '';
+      formData.nacionalidad = pn.nacionalidad || '';
+      formData.idioma = pn.idioma || 'Español';
+    } else if (client.tipo_cliente === 'persona_juridica' && client.persona_juridica) {
+      const pj = client.persona_juridica;
+      formData.razon_social = pj.razon_social || '';
+      formData.nit = pj.nit || '';
+      formData.digito_verificacion = pj.digito_verificacion || '';
+      formData.tipo_empresa = pj.tipo_empresa || '';
+      formData.representante_legal = pj.representante_legal || '';
+      formData.cedula_representante = pj.cedula_representante || '';
+      formData.fecha_constitucion = pj.fecha_constitucion || '';
+      formData.actividad_economica = pj.actividad_economica || '';
+      formData.codigo_ciiu = pj.codigo_ciiu || '';
+      formData.capital_social = pj.capital_social || '';
+    }
+
     console.log('Datos convertidos para el formulario:', formData);
     return formData;
   };
@@ -222,10 +254,10 @@ export default function EditarCliente() {
     <div className="min-h-screen bg-blue-50 text-gray-900">
       {/* Sidebar */}
       <Sidebar activeItem="clientes" />
-      
+
       {/* Header */}
       <Header userName="Usuario" />
-      
+
       {/* Main Content */}
       <main className="ml-64 pt-20 pb-20 px-8">
         <div className="max-w-7xl mx-auto">
@@ -249,15 +281,15 @@ export default function EditarCliente() {
           </div>
 
           {/* Form */}
-          <ClientForm 
-            onSubmit={handleSubmit} 
+          <ClientForm
+            onSubmit={handleSubmit}
             loading={saving}
             initialData={client ? convertClientToFormData(client) : null}
             isEdit={true}
           />
         </div>
       </main>
-      
+
       {/* Footer */}
       <Footer />
     </div>
