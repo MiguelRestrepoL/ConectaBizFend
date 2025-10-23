@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import OrderTrackingPage from '../../components/OrderTrackingPage';
 import Sidebar from '../../components/Sidebar'
 
+
 export default function Seguimiento() {
     const params = useParams();
     const id = params.id;
@@ -18,6 +19,7 @@ export default function Seguimiento() {
         const fetchOrder = async () => {
             try {
                 const response = await getOrderById(id);
+                console.log(response.data.pedido);
                 // Extrae pedido de la data
                 setOrder(response.data.pedido);
                 setLoading(false);

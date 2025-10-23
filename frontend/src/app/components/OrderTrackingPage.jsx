@@ -5,11 +5,9 @@ import OrderTimeline from '../components/OrderTimeLine'
 import OrderInfoCard from '../components/OrderInfoCard'
 import { Package, Clock, CheckCircle, Truck, Calendar, DollarSign, FileText, User, ArrowLeft } from 'lucide-react';
 import Link from "next/link";
+import GuiaSeguimientoPDF from "../../app/components/GuiaSeguimientoPDF"
 
 export default function OrderTrackingPage({ order, loading, error }) {
-
-  console.log(order)
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
@@ -65,7 +63,8 @@ export default function OrderTrackingPage({ order, loading, error }) {
           <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">Volver a pedidos</span>
         </Link>
-        {/* Header */}
+
+        {/* 🔹 Header del pedido con botón */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -78,22 +77,27 @@ export default function OrderTrackingPage({ order, loading, error }) {
                 <p className="text-gray-600">{order.descripcion}</p>
               )}
             </div>
-            <OrderStatusBadge estado={order.estado} />
+
+            {/* 🔹 Botón + estado */}
+            <div className="flex flex-col items-end gap-3">
+              <OrderStatusBadge estado={order.estado} />
+              <GuiaSeguimientoPDF order={order} />
+            </div>
           </div>
         </div>
 
-        {/* Timeline */}
+        {/* 🔹 Timeline */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Estado del Pedido</h2>
           <OrderTimeline estado={order.estado} />
         </div>
 
-        {/* Información detallada */}
+        {/* 🔹 Información detallada */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <OrderInfoCard
             icon={<User className="w-5 h-5" />}
             label="Cliente"
-            value={order.cliente?.persona_natural?.nombre || order.cliente?.persona_juridica.representante_legal}
+            value={order.cliente?.persona_natural?.nombre || order.cliente?.persona_juridica?.razon_social}
           />
           <OrderInfoCard
             icon={<Calendar className="w-5 h-5" />}
@@ -112,7 +116,7 @@ export default function OrderTrackingPage({ order, loading, error }) {
           />
         </div>
 
-        {/* Información adicional */}
+        {/* 🔹 Información adicional */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Información Adicional</h2>
           <div className="space-y-3 text-sm">
@@ -124,10 +128,10 @@ export default function OrderTrackingPage({ order, loading, error }) {
               <span className="text-gray-600">Última actualización:</span>
               <span className="font-medium text-gray-900">{formatDate(order.updated_at)}</span>
             </div>
-            {order.cliente?.email && (
+            {order.cliente?.correo_electronico && (
               <div className="flex justify-between py-2">
                 <span className="text-gray-600">Email del cliente:</span>
-                <span className="font-medium text-gray-900">{order.cliente.email}</span>
+                <span className="font-medium text-gray-900">{order.cliente.correo_electronico}</span>
               </div>
             )}
           </div>
