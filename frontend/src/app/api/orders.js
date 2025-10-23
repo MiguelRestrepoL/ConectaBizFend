@@ -85,6 +85,7 @@ export const getOrderById = async (id) => {
 // Función para actualizar un pedido
 export const updateOrder = async (id, orderData) => {
   try {
+    console.log(orderData)
     const response = await api.put(`/pedidos/${id}`, orderData);
     return {
       success: true,
