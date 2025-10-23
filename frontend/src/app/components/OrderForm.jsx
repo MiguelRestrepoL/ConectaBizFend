@@ -3,6 +3,9 @@ import FormField from './FormField';
 import SelectField from './SelectField';
 import { getClients } from '../api/clients';
 
+// Definir la tasa de IVA (19% en Colombia)
+const IVA_RATE = 0.19;
+
 const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = false }) => {
   const [formData, setFormData] = useState(initialData || {
     titulo: '',
@@ -18,13 +21,31 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
   const [clients, setClients] = useState([]);
   const [loadingClients, setLoadingClients] = useState(true);
 
+  // Calcular monto_recibido_sin_iva automáticamente cuando cambie monto_total_pagado
+  useEffect(() => {
+    const total = parseFloat(formData.monto_total_pagado);
+    if (!isNaN(total) && total > 0) {
+      const sinIva = parseFloat((total / (1 + IVA_RATE)).toFixed(2));
+      setFormData(prev => ({
+        ...prev,
+        monto_recibido_sin_iva: sinIva
+      }));
+    } else if (formData.monto_total_pagado === '' || formData.monto_total_pagado === 0) {
+      setFormData(prev => ({
+        ...prev,
+        monto_recibido_sin_iva: ''
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.monto_total_pagado]);
+
   // Cargar clientes para el select
   useEffect(() => {
     const loadClients = async () => {
       try {
         setLoadingClients(true);
-        const result = await getClients({ limit: 1000 }); // Cargar todos los clientes
-        
+        const result = await getClients({ limit: 1000 });
+
         if (result.success) {
           const clientsData = result.data.clients || result.data.data || result.data;
           setClients(clientsData);
@@ -51,7 +72,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -64,7 +85,6 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
   const validateForm = () => {
     const newErrors = {};
 
-    // Required fields validation
     if (!formData.titulo.trim()) newErrors.titulo = 'El título es requerido';
     if (!formData.cliente_id) newErrors.cliente_id = 'Debe seleccionar un cliente';
     if (!formData.fecha_entrega) newErrors.fecha_entrega = 'La fecha de entrega es requerida';
@@ -81,7 +101,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       onSubmit(formData);
     }
@@ -105,7 +125,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Información del Pedido</h3>
-            
+
             <div className="space-y-6">
               {/* Título */}
               <FormField
@@ -180,7 +200,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                       ⋯
                     </button>
                   </div>
-                  
+
                   {/* Área de texto */}
                   <textarea
                     value={formData.descripcion}
@@ -209,7 +229,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl p-6 shadow-lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Detalles del Pedido</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Columna izquierda */}
               <div className="space-y-6">
@@ -234,7 +254,8 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                 {/* Monto total pagado */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Monto total pagado
+                    Monto total pagado (con IVA)
+                    <span className="text-gray-500 text-xs ml-1">(IVA {(IVA_RATE * 100).toFixed(0)}%)</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -245,7 +266,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                       step="0.01"
                       min="0"
                       value={formData.monto_total_pagado}
-                      onChange={(e) => handleInputChange('monto_total_pagado', parseFloat(e.target.value) || 0)}
+                      onChange={(e) => handleInputChange('monto_total_pagado', e.target.value)}
                       className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="0.00"
                       required
@@ -259,7 +280,8 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                 {/* Monto recibido sin IVA */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Monto total recibido (-IVA)
+                    Monto total recibido (sin IVA)
+                    <span className="text-blue-600 text-xs ml-1">• Calculado automáticamente</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -270,10 +292,9 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                       step="0.01"
                       min="0"
                       value={formData.monto_recibido_sin_iva}
-                      onChange={(e) => handleInputChange('monto_recibido_sin_iva', parseFloat(e.target.value) || 0)}
-                      className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      readOnly
+                      className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed text-gray-700"
                       placeholder="0.00"
-                      required
                     />
                   </div>
                   {errors.monto_recibido_sin_iva && (
@@ -295,7 +316,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                 {/* Cliente */}
                 <SelectField
                   label="Usuario respectivo del pedido"
-                  value={formData.user_id}
+                  value={formData.cliente_id}
                   onChange={(e) => handleInputChange('cliente_id', e.target.value)}
                   options={clientOptions}
                   placeholder={loadingClients ? "Cargando clientes..." : "Seleccionar cliente"}
