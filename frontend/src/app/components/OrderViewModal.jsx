@@ -190,6 +190,12 @@ const OrderViewModal = ({ isOpen, onClose, order }) => {
                       {formatCurrency(order.monto_total_pagado - order.monto_recibido_sin_iva)}
                     </span>
                   </div>
+                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-200">
+                    <span className="text-gray-600 font-medium">Descuento de IVA:</span>
+                    <span className="text-xl font-bold text-red-600">
+                      {formatCurrency(order.monto_total_pagado - order.monto_recibido_sin_iva)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
