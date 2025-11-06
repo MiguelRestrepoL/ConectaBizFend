@@ -151,17 +151,25 @@ const OrderCard = ({ order, onEdit, onDelete, onView }) => {
       </div>
 
       {/* Montos */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="text-sm">
-          <span className="text-gray-600">Total Pagado:</span>
-          <div className="font-semibold text-green-600">
-            {formatCurrency(order.monto_total_pagado)}
+      <div className="space-y-3 mb-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-sm">
+            <span className="text-gray-600">Total Pagado:</span>
+            <div className="font-semibold text-green-600">
+              {formatCurrency(order.monto_total_pagado)}
+            </div>
+          </div>
+          <div className="text-sm">
+            <span className="text-gray-600">Recibido (-IVA):</span>
+            <div className="font-semibold text-blue-600">
+              {formatCurrency(order.monto_recibido_sin_iva)}
+            </div>
           </div>
         </div>
-        <div className="text-sm">
-          <span className="text-gray-600">Recibido (-IVA):</span>
-          <div className="font-semibold text-blue-600">
-            {formatCurrency(order.monto_recibido_sin_iva)}
+        <div className="text-sm bg-red-50 p-2 rounded-lg border border-red-200">
+          <span className="text-gray-600">Descuento de IVA:</span>
+          <div className="font-bold text-red-600">
+            {formatCurrency(order.monto_total_pagado - order.monto_recibido_sin_iva)}
           </div>
         </div>
       </div>
