@@ -251,84 +251,55 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                   error={errors.estado}
                 />
 
-                {/* Grid para los 3 montos */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Monto total pagado */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Monto total pagado (con IVA)
-                      <span className="text-gray-500 text-xs ml-1">(IVA {(IVA_RATE * 100).toFixed(0)}%)</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
-                      </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.monto_total_pagado}
-                        onChange={(e) => handleInputChange('monto_total_pagado', e.target.value)}
-                        className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0.00"
-                        required
-                      />
+                {/* Monto total pagado */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Monto total pagado (con IVA)
+                    <span className="text-gray-500 text-xs ml-1">(IVA {(IVA_RATE * 100).toFixed(0)}%)</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">$</span>
                     </div>
-                    {errors.monto_total_pagado && (
-                      <p className="mt-1 text-sm text-red-600">{errors.monto_total_pagado}</p>
-                    )}
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.monto_total_pagado}
+                      onChange={(e) => handleInputChange('monto_total_pagado', e.target.value)}
+                      className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                      required
+                    />
                   </div>
+                  {errors.monto_total_pagado && (
+                    <p className="mt-1 text-sm text-red-600">{errors.monto_total_pagado}</p>
+                  )}
+                </div>
 
-                  {/* Monto recibido sin IVA */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Monto recibido (sin IVA)
-                      <span className="text-blue-600 text-xs ml-1">• Calculado</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
-                      </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.monto_recibido_sin_iva}
-                        readOnly
-                        className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed text-gray-700"
-                        placeholder="0.00"
-                      />
+                {/* Monto recibido sin IVA */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Monto total recibido (sin IVA)
+                    <span className="text-blue-600 text-xs ml-1">• Calculado automáticamente</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">$</span>
                     </div>
-                    {errors.monto_recibido_sin_iva && (
-                      <p className="mt-1 text-sm text-red-600">{errors.monto_recibido_sin_iva}</p>
-                    )}
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.monto_recibido_sin_iva}
+                      readOnly
+                      className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed text-gray-700"
+                      placeholder="0.00"
+                    />
                   </div>
-
-                  {/* Monto de IVA */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Monto de IVA
-                      <span className="text-blue-600 text-xs ml-1">• Calculado</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 sm:text-sm">$</span>
-                      </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={
-                          formData.monto_total_pagado && formData.monto_recibido_sin_iva
-                            ? (parseFloat(formData.monto_total_pagado) - parseFloat(formData.monto_recibido_sin_iva)).toFixed(2)
-                            : ''
-                        }
-                        readOnly
-                        className="block w-full pl-7 pr-3 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed text-gray-700"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
+                  {errors.monto_recibido_sin_iva && (
+                    <p className="mt-1 text-sm text-red-600">{errors.monto_recibido_sin_iva}</p>
+                  )}
                 </div>
               </div>
 
@@ -381,4 +352,3 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
 };
 
 export default OrderForm;
-
