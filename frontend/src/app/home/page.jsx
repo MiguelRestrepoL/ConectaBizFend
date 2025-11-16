@@ -1,10 +1,8 @@
 'use client';
 
 import React from 'react';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+import Layout from '../components/Layout';
 import PlanCard from '../components/PlanCard';
-import Footer from '../components/Footer';
 
 export default function Home() {
   // Datos de los planes de suscripción
@@ -61,53 +59,59 @@ export default function Home() {
     // Aquí puedes agregar la lógica para manejar la selección del plan
   };
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Sidebar */}
-      <Sidebar activeItem="inicio" />
-      
-      {/* Header */}
-      <Header userName="Usuario" />
-      
-      {/* Main Content */}
-      <main className="ml-64 pt-20 pb-20 px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Page Title */}
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <button className="mr-4 p-2 hover:bg-gray-700 rounded-lg transition-colors">
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <h1 className="text-3xl font-bold">Selecciona un plan</h1>
-            </div>
-            <p className="text-gray-400 text-lg">
-              Puedes cancelar el plan antes del {new Date().toLocaleDateString('es-ES')} sin cobro. Puedes cambiar el plan cuando desees
-            </p>
-          </div>
+  const handleGoBack = () => {
+    window.history.back();
+  };
 
-          {/* Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {plans.map((plan, index) => (
-              <PlanCard
-                key={index}
-                title={plan.title}
-                description={plan.description}
-                price={plan.price}
-                features={plan.features}
-                shipping={plan.shipping}
-                isPopular={plan.isPopular}
-                buttonText={plan.buttonText}
-                onSelect={() => handlePlanSelect(plan.title)}
-              />
-            ))}
+  return (
+    <Layout activeItem="inicio" userName="Usuario">
+      {/* Solo el contenido específico de la página */}
+      <div className="max-w-7xl mx-auto">
+        {/* Page Title - RESPONSIVE */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center mb-4">
+            <button 
+              onClick={handleGoBack}
+              className="mr-3 sm:mr-4 p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Volver"
+            >
+              <svg className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+              Selecciona un plan
+            </h1>
           </div>
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg pl-11 sm:pl-14">
+            Puedes cancelar el plan antes del <span className="font-semibold">{new Date().toLocaleDateString('es-ES')}</span> sin cobro. 
+            <span className="hidden sm:inline"> Puedes cambiar el plan cuando desees</span>
+          </p>
         </div>
-      </main>
-      
-      {/* Footer */}
-      <Footer />
-    </div>
+
+        {/* Plans Grid - RESPONSIVE */}
+        <div className="
+          grid 
+          grid-cols-1 
+          md:grid-cols-2 
+          lg:grid-cols-3 
+          gap-4 sm:gap-6 lg:gap-8
+        ">
+          {plans.map((plan, index) => (
+            <PlanCard
+              key={index}
+              title={plan.title}
+              description={plan.description}
+              price={plan.price}
+              features={plan.features}
+              shipping={plan.shipping}
+              isPopular={plan.isPopular}
+              buttonText={plan.buttonText}
+              onSelect={() => handlePlanSelect(plan.title)}
+            />
+          ))}
+        </div>
+      </div>
+    </Layout>
   );
 }

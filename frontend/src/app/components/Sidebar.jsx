@@ -1,9 +1,11 @@
+'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { authService } from '../api/auth';
 import ConfirmModal from './ConfirmModal';
 
-const Sidebar = ({ activeItem = 'inicio' }) => {
+const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -103,7 +105,7 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
       label: 'Auditoria', 
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ), 
       href: '/auditoria' 
@@ -140,19 +142,6 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
     }
   ];
 
-
-  const handleLogout = async () => {
-    setLogoutLoading(true);
-    try {
-      await authService.logout();
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    } finally {
-      setLogoutLoading(false);
-      setShowLogoutModal(false);
-    }
-  };
-
   const salesChannels = [
     { 
       id: 'punto-fisico', 
@@ -176,15 +165,62 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
     }
   ];
 
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
+  const handleLinkClick = () => {
+    // Cerrar sidebar en móvil cuando se hace click en un link
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="w-64 bg-gray-800 text-white h-screen fixed left-0 top-0 overflow-y-auto">
+    <aside className={`
+      fixed left-0 top-0 
+      h-screen w-64 
+      bg-gray-800 text-white 
+      overflow-y-auto 
+      z-50
+      transition-transform duration-300 ease-in-out
+      
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      lg:translate-x-0
+    `}>
       <div className="p-6">
+        {/* Header con Logo y Botón Cerrar */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">C</span>
+            </div>
+            <span className="text-xl font-bold">CONECTABIZ</span>
+          </div>
+          
+          {/* Botón cerrar (solo visible en móvil) */}
+          <button 
+            onClick={onClose}
+            className="lg:hidden text-white hover:text-gray-300 transition-colors p-2"
+            aria-label="Cerrar menú"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         {/* Navigation Items */}
         <nav className="space-y-2 mb-8">
           {navigationItems.map((item) => (
             <Link
               key={item.id}
               href={item.href}
+              onClick={handleLinkClick}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 activeItem === item.id
                   ? 'bg-purple-600 text-white'
@@ -207,6 +243,7 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
               <Link
                 key={channel.id}
                 href={channel.href}
+                onClick={handleLinkClick}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
               >
                 {channel.icon}
@@ -217,7 +254,7 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
         </div>
 
         {/* Logout Button */}
-        <div className="absolute bottom-6 left-6 right-6">
+        <div className="border-t border-gray-700 pt-4">
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-colors group"
@@ -229,8 +266,9 @@ const Sidebar = ({ activeItem = 'inicio' }) => {
           </button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };
+
 
 export default Sidebar;
