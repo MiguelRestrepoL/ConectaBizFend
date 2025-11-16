@@ -5,88 +5,71 @@ import React from 'react';
 const Header = ({ userName = 'Usuario', onMenuClick }) => {
   return (
     <header 
-      className="fixed top-0 right-0 z-40 bg-gray-900 text-white shadow-lg"
-      style={{ 
-        width: '100%',
-        left: window.innerWidth >= 1024 ? '256px' : '0'
-      }}
+      className="fixed top-0 right-0 z-40 bg-gray-900 text-white shadow-lg lg:left-64"
+      style={{ width: '100%' }}
     >
       <div 
-        className="flex items-center justify-between gap-4"
+        className="flex items-center justify-between"
         style={{ 
           height: '64px',
-          padding: '0 16px'
+          padding: '0 16px',
+          gap: '16px'
         }}
       >
         
         {/* IZQUIERDA: Solo móvil/tablet */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center lg:hidden" style={{ gap: '8px' }}>
           <button 
             onClick={onMenuClick}
-            className="p-2 hover:bg-gray-800 rounded-lg"
-            style={{ padding: '8px' }}
+            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center" style={{ gap: '8px' }}>
             <div 
               className="bg-purple-600 rounded-lg flex items-center justify-center"
               style={{ width: '32px', height: '32px' }}
             >
               <span className="text-white font-bold">C</span>
             </div>
-            <span className="font-bold">CONECTABIZ</span>
+            <span className="font-bold text-sm sm:text-base">CONECTABIZ</span>
           </div>
         </div>
 
         {/* CENTRO: Solo desktop */}
-        <div 
-          className="hidden lg:flex flex-1 justify-center"
-          style={{ minWidth: 0 }}
-        >
-          <h1 
-            className="font-medium"
-            style={{ fontSize: '18px' }}
-          >
+        <div className="hidden lg:flex flex-1 justify-center">
+          <h1 className="text-lg font-medium">
             ¡Bienvenido nuevamente {userName}!
           </h1>
         </div>
 
         {/* DERECHA: Búsqueda + Botón */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center ml-auto lg:ml-0" style={{ gap: '12px' }}>
           
           {/* Búsqueda - DESKTOP */}
           <div className="hidden sm:block relative">
             <input
               type="text"
               placeholder="Buscar"
+              className="bg-gray-800 text-white placeholder-gray-400 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
               style={{
                 width: '200px',
                 height: '40px',
-                backgroundColor: '#1f2937',
-                color: 'white',
                 paddingLeft: '36px',
                 paddingRight: '12px',
-                borderRadius: '8px',
-                border: '1px solid #374151',
-                outline: 'none',
                 fontSize: '14px'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
-              onBlur={(e) => e.target.style.borderColor = '#374151'}
             />
             <svg 
+              className="absolute pointer-events-none text-gray-400"
               style={{
-                position: 'absolute',
                 left: '10px',
                 top: '10px',
                 width: '20px',
-                height: '20px',
-                color: '#9ca3af',
-                pointerEvents: 'none'
+                height: '20px'
               }}
               fill="none" 
               stroke="currentColor" 
@@ -103,11 +86,11 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
 
           {/* Búsqueda - MÓVIL (solo icono) */}
           <button 
-            className="sm:hidden p-2 hover:bg-gray-800 rounded-lg"
-            style={{ padding: '8px' }}
+            className="sm:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors"
           >
             <svg 
-              style={{ width: '20px', height: '20px', color: '#9ca3af' }}
+              className="text-gray-400"
+              style={{ width: '20px', height: '20px' }}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -118,16 +101,17 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
 
           {/* Botón Mi Tienda */}
           <button 
-            className="bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors"
             style={{
               height: '40px',
               padding: '0 16px',
-              color: 'white',
-              fontSize: '14px'
+              gap: '8px',
+              fontSize: '14px',
+              whiteSpace: 'nowrap'
             }}
           >
             <svg 
-              style={{ width: '20px', height: '20px' }}
+              style={{ width: '20px', height: '20px', flexShrink: 0 }}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
