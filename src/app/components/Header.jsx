@@ -39,53 +39,38 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </div>
         </div>
 
-        {/* CENTRO: Solo desktop */}
+        {/* CENTRO: Solo desktop - MÁS PEQUEÑO para dar espacio */}
         <div className="hidden lg:flex justify-center" style={{ minWidth: '200px', maxWidth: '400px' }}>
           <h1 className="font-medium truncate" style={{ fontSize: '16px' }}>
             ¡Bienvenido nuevamente {userName}!
           </h1>
         </div>
 
-        {/* DERECHA: Búsqueda + Botón */}
+        {/* DERECHA: Búsqueda + Botón - PRIORIDAD VISUAL */}
         <div className="flex items-center ml-auto" style={{ gap: '16px' }}>
           
-          {/* Búsqueda - DESKTOP - ALTO CONTRASTE */}
+          {/* Búsqueda - DESKTOP - MÁS GRANDE Y VISIBLE */}
           <div className="hidden sm:block relative">
             <input
               type="text"
               placeholder="Buscar"
+              className="bg-gray-800 text-white placeholder-gray-400 rounded-lg border-2 border-gray-700 focus:outline-none focus:border-purple-500"
               style={{
-                width: '280px',
-                height: '44px',
-                paddingLeft: '44px',
+                width: '280px',           // ← MÁS ANCHO (antes 200px)
+                height: '44px',           // ← MÁS ALTO (antes 40px)
+                paddingLeft: '44px',      // ← Más espacio para el ícono
                 paddingRight: '16px',
-                fontSize: '15px',
-                fontWeight: '400',
-                borderRadius: '8px',
-                
-                // ⭐ COLORES DE ALTO CONTRASTE
-                backgroundColor: '#374151',     // ← Gris más claro (gray-700)
-                color: '#ffffff',               // ← Texto blanco puro
-                border: '2px solid #6b7280',    // ← Border gris visible (gray-500)
-                outline: 'none'
-              }}
-              onFocus={(e) => {
-                e.target.style.backgroundColor = '#4b5563'; // gray-600 (más claro al focus)
-                e.target.style.borderColor = '#a78bfa';     // purple-400
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = '#374151'; // volver al original
-                e.target.style.borderColor = '#6b7280';
+                fontSize: '15px',         // ← Texto más grande
+                fontWeight: '400'
               }}
             />
             <svg 
-              className="absolute pointer-events-none"
+              className="absolute pointer-events-none text-gray-400"
               style={{
                 left: '14px',
-                top: '11px',
-                width: '22px',
-                height: '22px',
-                color: '#d1d5db'            // ← Ícono gris claro (gray-300)
+                top: '12px',
+                width: '22px',            // ← Ícono más grande
+                height: '22px'
               }}
               fill="none" 
               stroke="currentColor" 
@@ -115,15 +100,15 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
             </svg>
           </button>
 
-          {/* Botón Mi Tienda */}
+          {/* Botón Mi Tienda - TAMBIÉN MÁS GRANDE */}
           <button 
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors"
             style={{
-              height: '44px',
-              padding: '0 20px',
+              height: '44px',           // ← Mismo alto que el input
+              padding: '0 20px',        // ← Más padding
               gap: '10px',
-              fontSize: '15px',
-              fontWeight: '500',
+              fontSize: '15px',         // ← Texto más grande
+              fontWeight: '500',        // ← Más bold
               whiteSpace: 'nowrap'
             }}
           >
