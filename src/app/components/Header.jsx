@@ -9,11 +9,11 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
       style={{ width: '100%' }}
     >
       <div 
-        className="flex items-center justify-between"
+        className="flex items-center"
         style={{ 
           height: '64px',
-          padding: '0 24px',
-          gap: '24px'
+          padding: '0 12px',  // ← MÁS COMPACTO: 16px → 12px
+          gap: '12px'         // ← MÁS COMPACTO: 16px → 12px
         }}
       >
         
@@ -82,41 +82,40 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
 
         {/* ==================== DESKTOP (3 COLUMNAS) ==================== */}
         
-        {/* COLUMNA 1: IZQUIERDA - Bienvenida */}
+        {/* COLUMNA 1: IZQUIERDA - Bienvenida MÁS CORTA */}
         <div 
           className="hidden lg:flex items-center"
           style={{ 
-            minWidth: '280px',
-            flex: '0 0 auto'
+            width: '170px',        // ← FIJO: 170px (antes 200px)
+            flex: '0 0 170px'      // ← FIJO: no crece ni se encoge
           }}
         >
           <h1 
-            className="font-medium whitespace-nowrap"
-            style={{ fontSize: '16px' }}
+            className="font-medium truncate"
+            style={{ fontSize: '13px' }}  // ← MÁS PEQUEÑO: 14px → 13px
           >
-            ¡Bienvenido nuevamente {userName}!
+            ¡Bienvenido {userName}!
           </h1>
         </div>
 
-        {/* COLUMNA 2: CENTRO - Búsqueda */}
+        {/* COLUMNA 2: CENTRO - Búsqueda OCUPA TODO EL ESPACIO */}
         <div 
-          className="hidden lg:flex justify-center items-center"
+          className="hidden lg:flex items-center"
           style={{ 
-            flex: '1 1 auto',
-            maxWidth: '500px',
-            margin: '0 auto'
+            flex: '1 1 auto',      // ← CRECE todo lo que pueda
+            minWidth: 0            // ← Permite que se encoja si es necesario
           }}
         >
-          <div className="relative" style={{ width: '100%', maxWidth: '400px' }}>
+          <div className="relative" style={{ width: '100%', maxWidth: '500px' }}>
             <input
               type="text"
               placeholder="Buscar productos, pedidos, clientes..."
               style={{
                 width: '100%',
-                height: '44px',
-                paddingLeft: '44px',
-                paddingRight: '16px',
-                fontSize: '15px',
+                height: '40px',     // ← MÁS COMPACTO: 42px → 40px
+                paddingLeft: '40px',
+                paddingRight: '12px',
+                fontSize: '14px',
                 fontWeight: '400',
                 borderRadius: '8px',
                 backgroundColor: '#374151',
@@ -136,10 +135,10 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
             <svg 
               className="absolute pointer-events-none"
               style={{
-                left: '14px',
-                top: '11px',
-                width: '22px',
-                height: '22px',
+                left: '12px',
+                top: '9px',
+                width: '20px',
+                height: '20px',
                 color: '#d1d5db'
               }}
               fill="none" 
@@ -156,27 +155,28 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </div>
         </div>
 
-        {/* COLUMNA 3: DERECHA - Mi Tienda */}
+        {/* COLUMNA 3: DERECHA - Mi Tienda MÁS COMPACTO */}
         <div 
-          className="hidden lg:flex items-center justify-end"
+          className="hidden lg:flex items-center"
           style={{ 
-            minWidth: '140px',
-            flex: '0 0 auto'
+            width: '120px',        // ← FIJO: 120px (antes 130px)
+            flex: '0 0 120px'      // ← FIJO: no crece ni se encoge
           }}
         >
           <button 
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors"
             style={{
-              height: '44px',
-              padding: '0 20px',
-              gap: '10px',
-              fontSize: '15px',
+              height: '40px',     // ← IGUAL QUE INPUT: 40px
+              padding: '0 12px',  // ← MÁS COMPACTO: 16px → 12px
+              gap: '6px',         // ← MÁS COMPACTO: 8px → 6px
+              fontSize: '14px',
               fontWeight: '500',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              width: '100%'       // ← OCUPA TODO EL ANCHO DISPONIBLE
             }}
           >
             <svg 
-              style={{ width: '22px', height: '22px', flexShrink: 0 }}
+              style={{ width: '18px', height: '18px', flexShrink: 0 }}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
