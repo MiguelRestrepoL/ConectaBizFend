@@ -11,7 +11,7 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
       lg:left-64
       shadow-lg
     ">
-      <div className="h-16 px-4 lg:px-8 flex items-center justify-between">
+      <div className="h-16 px-4 lg:px-8 flex items-center justify-between gap-4">
         
         {/* SECCIÓN IZQUIERDA: Solo en móvil/tablet */}
         <div className="flex items-center gap-3 lg:hidden">
@@ -43,7 +43,7 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
         </div>
 
         {/* SECCIÓN DERECHA: Siempre visible */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           
           {/* Input de Búsqueda */}
           <div className="relative">
@@ -52,11 +52,11 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
               placeholder="Buscar"
               className="
                 h-10
-                w-24 sm:w-40 md:w-48 lg:w-56 xl:w-64
+                w-32 sm:w-48 lg:w-64
                 bg-gray-800 
                 text-white text-sm
                 placeholder-gray-400
-                pl-9 pr-3 py-2 
+                pl-10 pr-4 py-2 
                 rounded-lg 
                 border border-gray-700
                 focus:outline-none 
@@ -66,7 +66,7 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
               "
             />
             <svg 
-              className="absolute left-2.5 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -87,15 +87,16 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
               bg-blue-600 
               hover:bg-blue-700 
               text-white text-sm
-              px-3 sm:px-4
+              px-4
               rounded-lg 
               flex items-center gap-2
               transition-colors
               flex-shrink-0
+              whitespace-nowrap
             "
           >
             <svg 
-              className="w-5 h-5" 
+              className="w-5 h-5 flex-shrink-0" 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
