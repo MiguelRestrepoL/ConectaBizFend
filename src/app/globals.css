@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+/* Configuración de colores */
 @theme {
   --color-background: #0a0a0a;
   --color-foreground: #ededed;
+  
+  /* Añadir grays explícitos para v4 */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  --color-purple-600: #9333ea;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
 }
 
 body {
@@ -19,14 +36,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(31 41 55);
+  background: var(--color-gray-800);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(75 85 99);
+  background: var(--color-gray-600);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(107 114 128);
+  background: var(--color-gray-500);
 }

@@ -4,15 +4,27 @@ import React from 'react';
 
 const Header = ({ userName = 'Usuario', onMenuClick }) => {
   return (
-    <header className="fixed top-0 right-0 z-40 bg-gray-900 text-white w-full lg:left-64 shadow-lg">
-      <div className="h-16 px-4 lg:px-6 flex items-center justify-between gap-4">
+    <header 
+      className="fixed top-0 right-0 z-40 bg-gray-900 text-white shadow-lg"
+      style={{ 
+        width: '100%',
+        left: window.innerWidth >= 1024 ? '256px' : '0'
+      }}
+    >
+      <div 
+        className="flex items-center justify-between gap-4"
+        style={{ 
+          height: '64px',
+          padding: '0 16px'
+        }}
+      >
         
         {/* IZQUIERDA: Solo móvil/tablet */}
-        <div className="flex items-center gap-2 lg:hidden flex-shrink-0">
+        <div className="flex items-center gap-2 lg:hidden">
           <button 
             onClick={onMenuClick}
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="Abrir menú"
+            className="p-2 hover:bg-gray-800 rounded-lg"
+            style={{ padding: '8px' }}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -20,46 +32,62 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+            <div 
+              className="bg-purple-600 rounded-lg flex items-center justify-center"
+              style={{ width: '32px', height: '32px' }}
+            >
               <span className="text-white font-bold">C</span>
             </div>
-            <span className="font-bold text-sm sm:text-base">CONECTABIZ</span>
+            <span className="font-bold">CONECTABIZ</span>
           </div>
         </div>
 
         {/* CENTRO: Solo desktop */}
-        <div className="hidden lg:flex flex-1 justify-center min-w-0">
-          <h1 className="text-base xl:text-lg font-medium truncate">
+        <div 
+          className="hidden lg:flex flex-1 justify-center"
+          style={{ minWidth: 0 }}
+        >
+          <h1 
+            className="font-medium"
+            style={{ fontSize: '18px' }}
+          >
             ¡Bienvenido nuevamente {userName}!
           </h1>
         </div>
 
         {/* DERECHA: Búsqueda + Botón */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto lg:ml-0">
+        <div className="flex items-center gap-3">
           
-          {/* Búsqueda */}
-          <div className="relative">
-            {/* Input completo (visible desde tablet) */}
+          {/* Búsqueda - DESKTOP */}
+          <div className="hidden sm:block relative">
             <input
               type="text"
               placeholder="Buscar"
-              className="
-                hidden sm:block
-                h-9 w-36 md:w-48 xl:w-56
-                bg-gray-800 
-                text-white text-sm
-                placeholder-gray-400
-                pl-9 pr-3 py-2 
-                rounded-lg 
-                border border-gray-700
-                focus:outline-none 
-                focus:ring-2 
-                focus:ring-purple-500
-                transition-all
-              "
+              style={{
+                width: '200px',
+                height: '40px',
+                backgroundColor: '#1f2937',
+                color: 'white',
+                paddingLeft: '36px',
+                paddingRight: '12px',
+                borderRadius: '8px',
+                border: '1px solid #374151',
+                outline: 'none',
+                fontSize: '14px'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
+              onBlur={(e) => e.target.style.borderColor = '#374151'}
             />
             <svg 
-              className="hidden sm:block absolute left-2.5 top-2 w-4 h-4 text-gray-400 pointer-events-none" 
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '10px',
+                width: '20px',
+                height: '20px',
+                color: '#9ca3af',
+                pointerEvents: 'none'
+              }}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -71,31 +99,35 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
               />
             </svg>
-
-            {/* Solo ícono en móvil */}
-            <button className="sm:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
           </div>
+
+          {/* Búsqueda - MÓVIL (solo icono) */}
+          <button 
+            className="sm:hidden p-2 hover:bg-gray-800 rounded-lg"
+            style={{ padding: '8px' }}
+          >
+            <svg 
+              style={{ width: '20px', height: '20px', color: '#9ca3af' }}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
 
           {/* Botón Mi Tienda */}
           <button 
-            className="
-              h-9 w-9 sm:w-auto
-              bg-blue-600 
-              hover:bg-blue-700 
-              text-white text-sm
-              sm:px-3 md:px-4
-              rounded-lg 
-              flex items-center justify-center gap-2
-              transition-colors
-              flex-shrink-0
-            "
+            className="bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2"
+            style={{
+              height: '40px',
+              padding: '0 16px',
+              color: 'white',
+              fontSize: '14px'
+            }}
           >
             <svg 
-              className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" 
+              style={{ width: '20px', height: '20px' }}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -107,7 +139,7 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" 
               />
             </svg>
-            <span className="hidden sm:inline whitespace-nowrap">Mi tienda</span>
+            <span className="hidden sm:inline">Mi tienda</span>
           </button>
 
         </div>
