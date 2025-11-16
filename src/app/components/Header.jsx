@@ -7,17 +7,18 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
     <header className="
       fixed top-0 right-0 z-40
       bg-gray-900 text-white 
-      px-4 py-4
+      px-4 lg:px-8 py-4
       w-full lg:left-64
       flex items-center justify-between
       shadow-lg
     ">
       {/* IZQUIERDA: Hamburguesa + Logo */}
-      <div className="flex items-center gap-3">
-        {/* Botón hamburguesa */}
+      <div className="flex items-center gap-3 lg:hidden">
+        {/* Botón hamburguesa (solo móvil/tablet) */}
         <button 
           onClick={onMenuClick}
-          className="lg:hidden text-white p-2"
+          className="text-white p-2 hover:bg-gray-800 rounded-lg transition-colors"
+          aria-label="Abrir menú"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -25,23 +26,23 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
         </button>
 
         {/* Logo móvil */}
-        <div className="lg:hidden flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">C</span>
+            <span className="text-white font-bold text-lg">C</span>
           </div>
-          <span className="font-bold hidden sm:block">CONECTABIZ</span>
+          <span className="text-lg font-bold">CONECTABIZ</span>
         </div>
       </div>
 
       {/* CENTRO: Mensaje bienvenida (solo desktop) */}
-      <div className="hidden lg:block flex-1 text-center">
+      <div className="hidden lg:flex flex-1 justify-center">
         <h1 className="text-lg font-medium">
           ¡Bienvenido nuevamente {userName}!
         </h1>
       </div>
 
-      {/* DERECHA: Búsqueda + Mi Tienda */}
-      <div className="flex items-center gap-3">
+      {/* DERECHA: Búsqueda + Mi Tienda (SIEMPRE VISIBLE) */}
+      <div className="flex items-center gap-3 ml-auto">
         {/* Búsqueda */}
         <div className="relative">
           <input
@@ -52,16 +53,17 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
               bg-gray-800 
               text-white 
               placeholder-gray-400
-              pl-10 pr-3 py-2 
+              pl-10 pr-4 py-2 
               rounded-lg 
               border border-gray-700
               focus:outline-none 
               focus:ring-2 
               focus:ring-purple-500
+              focus:border-transparent
             "
           />
           <svg 
-            className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" 
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -78,9 +80,10 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           px-4 py-2 
           rounded-lg 
           flex items-center gap-2
+          transition-colors
           whitespace-nowrap
         ">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
           </svg>
           <span>Mi tienda</span>
