@@ -12,8 +12,8 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
         className="flex items-center justify-between"
         style={{ 
           height: '64px',
-          padding: '0 16px',
-          gap: '16px'
+          padding: '0 24px',
+          gap: '24px'
         }}
       >
         
@@ -39,37 +39,38 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </div>
         </div>
 
-        {/* CENTRO: Solo desktop */}
-        <div className="hidden lg:flex flex-1 justify-center">
-          <h1 className="text-lg font-medium">
+        {/* CENTRO: Solo desktop - MÁS PEQUEÑO para dar espacio */}
+        <div className="hidden lg:flex justify-center" style={{ minWidth: '200px', maxWidth: '400px' }}>
+          <h1 className="font-medium truncate" style={{ fontSize: '16px' }}>
             ¡Bienvenido nuevamente {userName}!
           </h1>
         </div>
 
-        {/* DERECHA: Búsqueda + Botón */}
-        <div className="flex items-center ml-auto lg:ml-0" style={{ gap: '12px' }}>
+        {/* DERECHA: Búsqueda + Botón - PRIORIDAD VISUAL */}
+        <div className="flex items-center ml-auto" style={{ gap: '16px' }}>
           
-          {/* Búsqueda - DESKTOP */}
+          {/* Búsqueda - DESKTOP - MÁS GRANDE Y VISIBLE */}
           <div className="hidden sm:block relative">
             <input
               type="text"
               placeholder="Buscar"
-              className="bg-gray-800 text-white placeholder-gray-400 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="bg-gray-800 text-white placeholder-gray-400 rounded-lg border-2 border-gray-700 focus:outline-none focus:border-purple-500"
               style={{
-                width: '200px',
-                height: '40px',
-                paddingLeft: '36px',
-                paddingRight: '12px',
-                fontSize: '14px'
+                width: '280px',           // ← MÁS ANCHO (antes 200px)
+                height: '44px',           // ← MÁS ALTO (antes 40px)
+                paddingLeft: '44px',      // ← Más espacio para el ícono
+                paddingRight: '16px',
+                fontSize: '15px',         // ← Texto más grande
+                fontWeight: '400'
               }}
             />
             <svg 
               className="absolute pointer-events-none text-gray-400"
               style={{
-                left: '10px',
-                top: '10px',
-                width: '20px',
-                height: '20px'
+                left: '14px',
+                top: '12px',
+                width: '22px',            // ← Ícono más grande
+                height: '22px'
               }}
               fill="none" 
               stroke="currentColor" 
@@ -99,19 +100,20 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
             </svg>
           </button>
 
-          {/* Botón Mi Tienda */}
+          {/* Botón Mi Tienda - TAMBIÉN MÁS GRANDE */}
           <button 
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors"
             style={{
-              height: '40px',
-              padding: '0 16px',
-              gap: '8px',
-              fontSize: '14px',
+              height: '44px',           // ← Mismo alto que el input
+              padding: '0 20px',        // ← Más padding
+              gap: '10px',
+              fontSize: '15px',         // ← Texto más grande
+              fontWeight: '500',        // ← Más bold
               whiteSpace: 'nowrap'
             }}
           >
             <svg 
-              style={{ width: '20px', height: '20px', flexShrink: 0 }}
+              style={{ width: '22px', height: '22px', flexShrink: 0 }}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
