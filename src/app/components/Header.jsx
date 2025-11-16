@@ -17,7 +17,9 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
         }}
       >
         
-        {/* IZQUIERDA: Solo móvil/tablet */}
+        {/* ==================== MÓVIL/TABLET ==================== */}
+        
+        {/* IZQUIERDA MÓVIL: Hamburguesa + Logo */}
         <div className="flex items-center lg:hidden" style={{ gap: '8px' }}>
           <button 
             onClick={onMenuClick}
@@ -39,38 +41,106 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </div>
         </div>
 
-        {/* CENTRO: Solo desktop - MÁS PEQUEÑO para dar espacio */}
-        <div className="hidden lg:flex justify-center" style={{ minWidth: '200px', maxWidth: '400px' }}>
-          <h1 className="font-medium truncate" style={{ fontSize: '16px' }}>
+        {/* DERECHA MÓVIL: Búsqueda + Botón */}
+        <div className="flex items-center lg:hidden ml-auto" style={{ gap: '12px' }}>
+          <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+            <svg 
+              style={{ width: '20px', height: '20px', color: '#9ca3af' }}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+
+          <button 
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center"
+            style={{
+              height: '36px',
+              padding: '0 12px',
+              gap: '8px',
+              fontSize: '14px'
+            }}
+          >
+            <svg 
+              style={{ width: '18px', height: '18px' }}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" 
+              />
+            </svg>
+            <span className="hidden sm:inline">Mi tienda</span>
+          </button>
+        </div>
+
+        {/* ==================== DESKTOP (3 COLUMNAS) ==================== */}
+        
+        {/* COLUMNA 1: IZQUIERDA - Bienvenida */}
+        <div 
+          className="hidden lg:flex items-center"
+          style={{ 
+            minWidth: '280px',
+            flex: '0 0 auto'
+          }}
+        >
+          <h1 
+            className="font-medium whitespace-nowrap"
+            style={{ fontSize: '16px' }}
+          >
             ¡Bienvenido nuevamente {userName}!
           </h1>
         </div>
 
-        {/* DERECHA: Búsqueda + Botón - PRIORIDAD VISUAL */}
-        <div className="flex items-center ml-auto" style={{ gap: '16px' }}>
-          
-          {/* Búsqueda - DESKTOP - MÁS GRANDE Y VISIBLE */}
-          <div className="hidden sm:block relative">
+        {/* COLUMNA 2: CENTRO - Búsqueda */}
+        <div 
+          className="hidden lg:flex justify-center items-center"
+          style={{ 
+            flex: '1 1 auto',
+            maxWidth: '500px',
+            margin: '0 auto'
+          }}
+        >
+          <div className="relative" style={{ width: '100%', maxWidth: '400px' }}>
             <input
               type="text"
-              placeholder="Buscar"
-              className="bg-gray-800 text-white placeholder-gray-400 rounded-lg border-2 border-gray-700 focus:outline-none focus:border-purple-500"
+              placeholder="Buscar productos, pedidos, clientes..."
               style={{
-                width: '280px',           // ← MÁS ANCHO (antes 200px)
-                height: '44px',           // ← MÁS ALTO (antes 40px)
-                paddingLeft: '44px',      // ← Más espacio para el ícono
+                width: '100%',
+                height: '44px',
+                paddingLeft: '44px',
                 paddingRight: '16px',
-                fontSize: '15px',         // ← Texto más grande
-                fontWeight: '400'
+                fontSize: '15px',
+                fontWeight: '400',
+                borderRadius: '8px',
+                backgroundColor: '#374151',
+                color: '#ffffff',
+                border: '2px solid #6b7280',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.backgroundColor = '#4b5563';
+                e.target.style.borderColor = '#a78bfa';
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = '#374151';
+                e.target.style.borderColor = '#6b7280';
               }}
             />
             <svg 
-              className="absolute pointer-events-none text-gray-400"
+              className="absolute pointer-events-none"
               style={{
                 left: '14px',
-                top: '12px',
-                width: '22px',            // ← Ícono más grande
-                height: '22px'
+                top: '11px',
+                width: '22px',
+                height: '22px',
+                color: '#d1d5db'
               }}
               fill="none" 
               stroke="currentColor" 
@@ -84,31 +154,24 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
               />
             </svg>
           </div>
+        </div>
 
-          {/* Búsqueda - MÓVIL (solo icono) */}
-          <button 
-            className="sm:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <svg 
-              className="text-gray-400"
-              style={{ width: '20px', height: '20px' }}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-
-          {/* Botón Mi Tienda - TAMBIÉN MÁS GRANDE */}
+        {/* COLUMNA 3: DERECHA - Mi Tienda */}
+        <div 
+          className="hidden lg:flex items-center justify-end"
+          style={{ 
+            minWidth: '140px',
+            flex: '0 0 auto'
+          }}
+        >
           <button 
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center transition-colors"
             style={{
-              height: '44px',           // ← Mismo alto que el input
-              padding: '0 20px',        // ← Más padding
+              height: '44px',
+              padding: '0 20px',
               gap: '10px',
-              fontSize: '15px',         // ← Texto más grande
-              fontWeight: '500',        // ← Más bold
+              fontSize: '15px',
+              fontWeight: '500',
               whiteSpace: 'nowrap'
             }}
           >
@@ -125,10 +188,10 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" 
               />
             </svg>
-            <span className="hidden sm:inline">Mi tienda</span>
+            <span>Mi tienda</span>
           </button>
-
         </div>
+
       </div>
     </header>
   );
