@@ -14,14 +14,13 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           padding: '0 20px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
           gap: '20px'
         }}
       >
         
         {/* ==================== MÓVIL/TABLET ==================== */}
         
-        {/* IZQUIERDA MÓVIL */}
+        {/* IZQUIERDA MÓVIL: Hamburguesa + Logo */}
         <div 
           className="lg:hidden"
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -46,7 +45,7 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </div>
         </div>
 
-        {/* DERECHA MÓVIL */}
+        {/* DERECHA MÓVIL: Búsqueda + Mi tienda */}
         <div 
           className="lg:hidden"
           style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}
@@ -68,33 +67,31 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
           </button>
         </div>
 
-        {/* ==================== DESKTOP ==================== */}
+        {/* ==================== DESKTOP: 3 COLUMNAS ==================== */}
         
         {/* IZQUIERDA: Bienvenida */}
         <div 
           className="hidden lg:block"
-          style={{ 
-            width: '180px',
-            flexShrink: 0
-          }}
+          style={{ width: '190px', flexShrink: 0 }}
         >
-          <h1 style={{ fontSize: '14px', fontWeight: '500', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <h1 style={{ fontSize: '14px', fontWeight: '500', whiteSpace: 'nowrap' }}>
             ¡Bienvenido {userName}!
           </h1>
         </div>
 
         {/* CENTRO: Búsqueda */}
         <div 
-          className="hidden lg:flex"
-          style={{ 
-            flex: '1 1 auto',
-            display: 'flex',
-            justifyContent: 'center',
-            maxWidth: '500px',
-            margin: '0 auto'
-          }}
+          className="hidden lg:block"
+          style={{ flex: '1 1 auto' }}
         >
-          <div style={{ position: 'relative', width: '100%' }}>
+          <div 
+            style={{ 
+              position: 'relative', 
+              width: '100%', 
+              maxWidth: '500px', 
+              margin: '0 auto' 
+            }}
+          >
             <input
               type="text"
               placeholder="Buscar productos, pedidos, clientes..."
@@ -141,24 +138,19 @@ const Header = ({ userName = 'Usuario', onMenuClick }) => {
         {/* DERECHA: Mi Tienda */}
         <div 
           className="hidden lg:block"
-          style={{ 
-            width: '120px',
-            flexShrink: 0
-          }}
+          style={{ width: '130px', flexShrink: 0 }}
         >
           <button 
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             style={{
               width: '100%',
               height: '40px',
-              padding: '0 12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
               fontSize: '14px',
-              fontWeight: '500',
-              whiteSpace: 'nowrap'
+              fontWeight: '500'
             }}
           >
             <svg 
