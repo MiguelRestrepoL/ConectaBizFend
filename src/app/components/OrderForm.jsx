@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import FormField from './FormField';
 import SelectField from './SelectField';
