@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import OrderCard from './OrderCard';
 import OrderViewModal from './OrderViewModal';
 import DeleteOrderModal from './DeleteOrderModal';
+import { getOrders, deleteOrder } from '../api/orders';
 
 const OrderList = ({ refreshTrigger = 0 }) => {
   const [orders, setOrders] = useState([]);
@@ -20,7 +21,7 @@ const OrderList = ({ refreshTrigger = 0 }) => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // Cargar pedidos desde API
+  // Cargar pedidos desde API usando la función correcta
   useEffect(() => {
     loadOrders();
   }, [refreshTrigger]);
@@ -30,21 +31,17 @@ const OrderList = ({ refreshTrigger = 0 }) => {
       setLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Usar la función getOrders de tu API
+      const result = await getOrders({ limit: 1000 });
 
-      if (!response.ok) {
-        throw new Error('Error al cargar los pedidos');
+      if (result.success) {
+        // Manejar la estructura de respuesta de tu API
+        const ordersData = result.data.pedidos || result.data.data || result.data;
+        setOrders(ordersData);
+        setFilteredOrders(ordersData);
+      } else {
+        throw new Error(result.error || 'Error al cargar los pedidos');
       }
-
-      const data = await response.json();
-      setOrders(data);
-      setFilteredOrders(data);
     } catch (err) {
       setError(err.message);
       console.error('Error loading orders:', err);
@@ -94,29 +91,20 @@ const OrderList = ({ refreshTrigger = 0 }) => {
 
   const confirmDelete = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${selectedOrder.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Usar la función deleteOrder de tu API
+      const result = await deleteOrder(selectedOrder.id);
 
-      if (!response.ok) {
-        throw new Error('Error al eliminar el pedido');
+      if (result.success) {
+        // Recargar lista
+        await loadOrders();
+        setIsDeleteModalOpen(false);
+        setSelectedOrder(null);
+      } else {
+        throw new Error(result.error || 'Error al eliminar el pedido');
       }
-
-      // Recargar lista
-      await loadOrders();
-      setIsDeleteModalOpen(false);
-      setSelectedOrder(null);
     } catch (err) {
       console.error('Error deleting order:', err);
-      alert('Error al eliminar el pedido');
+      alert(err.message || 'Error al eliminar el pedido');
     }
   };
 
