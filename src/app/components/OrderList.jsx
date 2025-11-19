@@ -1,519 +1,305 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import OrderCard from './OrderCard';
-import DeleteOrderModal from './DeleteOrderModal';
 import OrderViewModal from './OrderViewModal';
-import AlertModal from './AlertModal';
-import { getOrders, deleteOrder } from '../api/orders';
+import DeleteOrderModal from './DeleteOrderModal';
 
-
-const OrderList = ({ onEdit, onView, refreshTrigger }) => {
+const OrderList = ({ refreshTrigger = 0 }) => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Estados de búsqueda y filtros
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterBy, setFilterBy] = useState('all');
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalOrders: 0,
-    limit: 12
-  });
+  const [statusFilter, setStatusFilter] = useState('todos');
+  
+  // Estados de modales
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const [searchTimeout, setSearchTimeout] = useState(null);
-  const [deleteOrderModal, setDeleteOrderModal] = useState({
-    isOpen: false,
-    order: null,
-    loading: false
-  });
-  const [viewModal, setViewModal] = useState({
-    isOpen: false,
-    order: null
-  });
-  const [alertModal, setAlertModal] = useState({
-    isOpen: false,
-    title: '',
-    message: '',
-    type: 'info'
-  });
+  // Cargar pedidos desde API
+  useEffect(() => {
+    loadOrders();
+  }, [refreshTrigger]);
 
-  // Función helper para mostrar alertas
-  const showAlert = (title, message, type = 'info') => {
-    setAlertModal({
-      isOpen: true,
-      title,
-      message,
-      type
-    });
-  };
-
-  // Cargar pedidos
-  const loadOrders = async (page = 1, search = '') => {
+  const loadOrders = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      const result = await getOrders({
-        page,
-        limit: pagination.limit,
-        search
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      console.log('Resultado completo:', result);
-
-      if (result.success) {
-        const data = result.data;
-        console.log('Datos de la respuesta:', data);
-
-        // Manejar diferentes estructuras de respuesta
-        let ordersArray = [];
-        if (Array.isArray(data)) {
-          // Si data es directamente un array
-          ordersArray = data;
-        } else if (data.orders && Array.isArray(data.orders)) {
-          // Si data tiene una propiedad orders
-          ordersArray = data.orders;
-        } else if (data.data && Array.isArray(data.data)) {
-          // Si data tiene una propiedad data
-          ordersArray = data.data;
-        } else if (data.pedidos && Array.isArray(data.pedidos)) {
-          // Si data tiene una propiedad pedidos
-          ordersArray = data.pedidos;
-        }
-
-        console.log('Array de pedidos extraído:', ordersArray);
-        setOrders(ordersArray);
-
-        setPagination(prev => ({
-          ...prev,
-          currentPage: data.currentPage || data.page || page,
-          totalPages: data.totalPages || Math.ceil((data.totalOrders || data.total || ordersArray.length) / pagination.limit),
-          totalOrders: data.totalOrders || data.total || ordersArray.length
-        }));
-      } else {
-        // Manejo específico de errores de asociación
-        if (result.error && result.error.includes('Association with alias "cliente" does not exist')) {
-          setError('Error de configuración del servidor. Por favor, contacta al administrador.');
-        } else {
-          setError(result.error || 'Error al cargar pedidos');
-        }
+      if (!response.ok) {
+        throw new Error('Error al cargar los pedidos');
       }
+
+      const data = await response.json();
+      setOrders(data);
+      setFilteredOrders(data);
     } catch (err) {
-      setError('Error de conexión al cargar pedidos');
-      setError({
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status
-      });
+      setError(err.message);
       console.error('Error loading orders:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Abrir modal de confirmación de eliminación
-  const handleDeleteClick = (order) => {
-    setDeleteOrderModal({
-      isOpen: true,
-      order: order,
-      loading: false
-    });
+  // Filtrar pedidos cuando cambian búsqueda o filtro
+  useEffect(() => {
+    let result = [...orders];
+
+    // Filtrar por término de búsqueda
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(order => 
+        order.titulo?.toLowerCase().includes(term) ||
+        order.cliente?.nombre?.toLowerCase().includes(term) ||
+        order.id?.toString().includes(term)
+      );
+    }
+
+    // Filtrar por estado
+    if (statusFilter !== 'todos') {
+      result = result.filter(order => 
+        order.estado?.toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    setFilteredOrders(result);
+  }, [searchTerm, statusFilter, orders]);
+
+  // Handlers de acciones
+  const handleView = (order) => {
+    setSelectedOrder(order);
+    setIsViewModalOpen(true);
   };
 
-  // Cerrar modal de eliminación
-  const handleDeleteCancel = () => {
-    setDeleteOrderModal({
-      isOpen: false,
-      order: null,
-      loading: false
-    });
+  const handleEdit = (order) => {
+    window.location.href = `/editar-pedido/${order.id}`;
   };
 
-  // Confirmar eliminación
-  const handleDeleteConfirm = async () => {
-    if (!deleteOrderModal.order) return;
+  const handleDelete = (order) => {
+    setSelectedOrder(order);
+    setIsDeleteModalOpen(true);
+  };
 
-    setDeleteOrderModal(prev => ({ ...prev, loading: true }));
-
+  const confirmDelete = async () => {
     try {
-      const result = await deleteOrder(deleteOrderModal.order.id);
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${selectedOrder.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      if (result.success) {
-        // Recargar la lista de pedidos
-        await loadOrders(pagination.currentPage, searchTerm);
-
-        // Cerrar modal
-        setDeleteOrderModal({
-          isOpen: false,
-          order: null,
-          loading: false
-        });
-
-        // Mostrar mensaje de éxito
-        showAlert('Éxito', 'Pedido eliminado exitosamente', 'success');
-      } else {
-        showAlert('Error', 'Error al eliminar pedido: ' + result.error, 'error');
-        setDeleteOrderModal(prev => ({ ...prev, loading: false }));
+      if (!response.ok) {
+        throw new Error('Error al eliminar el pedido');
       }
+
+      // Recargar lista
+      await loadOrders();
+      setIsDeleteModalOpen(false);
+      setSelectedOrder(null);
     } catch (err) {
-      showAlert('Error', 'Error al eliminar pedido', 'error');
       console.error('Error deleting order:', err);
-      setDeleteOrderModal(prev => ({ ...prev, loading: false }));
+      alert('Error al eliminar el pedido');
     }
   };
 
-  // Abrir modal de visualización
-  const handleViewClick = (order) => {
-    setViewModal({
-      isOpen: true,
-      order: order
-    });
-  };
-
-  // Cerrar modal de visualización
-  const handleViewClose = () => {
-    setViewModal({
-      isOpen: false,
-      order: null
-    });
-  };
-
-  // Manejar búsqueda con debounce
-  const handleSearchChange = (value) => {
-    setSearchTerm(value);
-
-    // Limpiar timeout anterior
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-
-    // Crear nuevo timeout para búsqueda
-    const timeout = setTimeout(() => {
-      setPagination(prev => ({ ...prev, currentPage: 1 }));
-      loadOrders(1, value);
-    }, 500);
-
-    setSearchTimeout(timeout);
-  };
-
-  // Manejar cambio de filtro
-  const handleFilterChange = (value) => {
-    setFilterBy(value);
-    // TODO: Implementar filtros en el backend si es necesario
-    // Por ahora solo filtramos en el frontend
-  };
-
-  // Filtrar pedidos (solo para filtros que no están en el backend)
-  const filteredOrders = orders.filter(order => {
-    const matchesFilter = filterBy === 'all' ||
-      (filterBy === 'preparando' && order.estado === 'preparando') ||
-      (filterBy === 'enviado' && order.estado === 'enviado') ||
-      (filterBy === 'entregado' && order.estado === 'entregado');
-
-    return matchesFilter;
-  });
-
-  // Cargar pedidos al montar el componente y cuando cambie refreshTrigger
-  useEffect(() => {
-    loadOrders(pagination.currentPage, searchTerm);
-  }, [refreshTrigger]);
-
-  // Limpiar timeout al desmontar
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-    };
-  }, [searchTimeout]);
-
-  // Funciones de paginación
-  const goToPage = (page) => {
-    if (page >= 1 && page <= pagination.totalPages) {
-      loadOrders(page, searchTerm);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (pagination.currentPage < pagination.totalPages) {
-      goToPage(pagination.currentPage + 1);
-    }
-  };
-
-  const goToPrevPage = () => {
-    if (pagination.currentPage > 1) {
-      goToPage(pagination.currentPage - 1);
-    }
-  };
-
+  // Estados de carga y error
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center" style={{ minHeight: '400px' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full border-4 border-blue-500 border-t-transparent" 
+               style={{ width: '48px', height: '48px', margin: '0 auto 16px' }}>
+          </div>
+          <p className="text-gray-600">Cargando pedidos...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <div className="text-red-600 mb-2">
-          <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 sm:p-6">
+        <div className="flex items-start gap-3">
+          <svg style={{ width: '24px', height: '24px' }} className="text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-red-800 mb-2">Error al cargar pedidos</h3>
-        <p className="text-red-600 mb-4">{error}</p>
-
-        <div className="flex space-x-2">
-          <button
-            onClick={() => loadOrders(pagination.currentPage, searchTerm)}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Reintentar
-          </button>
-          <button
-            onClick={() => {
-              setError(null);
-            }}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Cerrar
-          </button>
+          <div>
+            <h3 className="font-semibold text-red-800 mb-1">Error al cargar pedidos</h3>
+            <p className="text-sm text-red-600">{error}</p>
+            <button
+              onClick={loadOrders}
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+            >
+              Reintentar
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Barra de búsqueda y filtros */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-        <div className="flex flex-col sm:flex-row gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      
+      {/* BARRA DE BÚSQUEDA Y FILTROS */}
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
+        
+        {/* Fila 1: Búsqueda (móvil full width, desktop con filtro en línea) */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          
           {/* Búsqueda */}
           <div className="flex-1">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg 
+                style={{ width: '20px', height: '20px', position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }}
+                className="text-gray-400"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
                 placeholder="Buscar por título, cliente o ID..."
                 value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
+                style={{ paddingLeft: '40px', paddingRight: '12px', paddingTop: '10px', paddingBottom: '10px' }}
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  style={{ fontSize: '20px' }}
+                >
+                  ×
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Filtros */}
-          <div className="flex gap-2">
+          {/* Filtro por Estado */}
+          <div className="w-full sm:w-48">
             <select
-              value={filterBy}
-              onChange={(e) => handleFilterChange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
+              style={{ padding: '10px 12px' }}
             >
-              <option value="all">Todos los pedidos</option>
+              <option value="todos">Todos los estados</option>
               <option value="preparando">Preparando</option>
               <option value="enviado">Enviado</option>
               <option value="entregado">Entregado</option>
+              <option value="cancelado">Cancelado</option>
             </select>
           </div>
         </div>
-      </div>
 
-      {/* Estadísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Total</p>
-              <p className="text-2xl font-semibold text-gray-900">{pagination.totalOrders}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Preparando</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {orders.filter(o => o.estado === 'preparando').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Enviado</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {orders.filter(o => o.estado === 'enviado').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-500">Entregado</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {orders.filter(o => o.estado === 'entregado').length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Lista de pedidos */}
-      {filteredOrders.length === 0 ? (
-        <div className="bg-white rounded-lg p-12 text-center shadow-sm border border-gray-200">
-          <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {searchTerm || filterBy !== 'all' ? 'No se encontraron pedidos' : 'No hay pedidos registrados'}
-          </h3>
-          <p className="text-gray-500 mb-6">
-            {searchTerm || filterBy !== 'all'
-              ? 'Intenta ajustar los filtros de búsqueda'
-              : 'Comienza creando tu primer pedido'
-            }
+        {/* Fila 2: Resultados + Botón Crear (responsive) */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">
+            Mostrando <span className="font-semibold text-gray-900">{filteredOrders.length}</span> de {orders.length} pedidos
           </p>
-          {!searchTerm && filterBy === 'all' && (
-            <a
-              href="/crear-pedido"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-block"
+          
+          <button
+            onClick={() => window.location.href = '/crear-pedido'}
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base"
+            style={{ padding: '10px 20px' }}
+          >
+            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Nuevo Pedido</span>
+          </button>
+        </div>
+      </div>
+
+      {/* GRID DE PEDIDOS */}
+      {filteredOrders.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 sm:p-12 text-center">
+          <svg 
+            style={{ width: '64px', height: '64px', margin: '0 auto 16px' }}
+            className="text-gray-300"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay pedidos</h3>
+          <p className="text-gray-500 text-sm mb-4">
+            {searchTerm || statusFilter !== 'todos' 
+              ? 'No se encontraron pedidos con los filtros aplicados' 
+              : 'Aún no has creado ningún pedido'}
+          </p>
+          {(searchTerm || statusFilter !== 'todos') && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('todos');
+              }}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
             >
-              Crear primer pedido
-            </a>
+              Limpiar filtros
+            </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {filteredOrders.map((order) => (
             <OrderCard
               key={order.id}
               order={order}
-              onEdit={onEdit}
-              onDelete={handleDeleteClick}
-              onView={handleViewClick}
+              onView={handleView}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           ))}
         </div>
       )}
 
-      {/* Controles de paginación */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-between bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center text-sm text-gray-700">
-            <span>
-              Mostrando {((pagination.currentPage - 1) * pagination.limit) + 1} a{' '}
-              {Math.min(pagination.currentPage * pagination.limit, pagination.totalOrders)} de{' '}
-              {pagination.totalOrders} pedidos
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {/* Botón anterior */}
-            <button
-              onClick={goToPrevPage}
-              disabled={pagination.currentPage === 1}
-              className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            {/* Números de página */}
-            <div className="flex space-x-1">
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                let pageNum;
-                if (pagination.totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (pagination.currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (pagination.currentPage >= pagination.totalPages - 2) {
-                  pageNum = pagination.totalPages - 4 + i;
-                } else {
-                  pageNum = pagination.currentPage - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => goToPage(pageNum)}
-                    className={`px-3 py-2 text-sm font-medium rounded-lg ${pageNum === pagination.currentPage
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Botón siguiente */}
-            <button
-              onClick={goToNextPage}
-              disabled={pagination.currentPage === pagination.totalPages}
-              className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      {/* MODALES */}
+      {isViewModalOpen && selectedOrder && (
+        <OrderViewModal
+          order={selectedOrder}
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedOrder(null);
+          }}
+        />
       )}
 
-      {/* Modal de confirmación de eliminación de pedido */}
-      <DeleteOrderModal
-        isOpen={deleteOrderModal.isOpen}
-        onClose={handleDeleteCancel}
-        onConfirm={handleDeleteConfirm}
-        order={deleteOrderModal.order}
-        loading={deleteOrderModal.loading}
-      />
-
-      {/* Modal de visualización de pedido */}
-      <OrderViewModal
-        isOpen={viewModal.isOpen}
-        onClose={handleViewClose}
-        order={viewModal.order}
-      />
-
-      {/* Modal de alerta */}
-      <AlertModal
-        isOpen={alertModal.isOpen}
-        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
-        title={alertModal.title}
-        message={alertModal.message}
-        type={alertModal.type}
-      />
+      {isDeleteModalOpen && selectedOrder && (
+        <DeleteOrderModal
+          order={selectedOrder}
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setSelectedOrder(null);
+          }}
+          onConfirm={confirmDelete}
+        />
+      )}
     </div>
   );
 };
