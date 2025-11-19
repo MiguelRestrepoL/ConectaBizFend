@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 const OrderViewModal = ({ isOpen, onClose, order }) => {
@@ -51,6 +53,50 @@ const OrderViewModal = ({ isOpen, onClose, order }) => {
     }
   };
 
+  // ✅ FIX: Obtener datos del cliente de forma segura
+  const getClienteInfo = () => {
+    if (!order.cliente) {
+      return {
+        nombre: 'Sin cliente asignado',
+        email: 'N/A',
+        telefono: 'N/A',
+        esPersonaNatural: true
+      };
+    }
+
+    const cliente = order.cliente;
+    
+    // Si es persona natural
+    if (cliente.persona_natural) {
+      return {
+        nombre: `${cliente.persona_natural.nombre || ''} ${cliente.persona_natural.apellido || ''}`.trim() || 'Sin nombre',
+        email: cliente.correo_electronico || 'N/A',
+        telefono: cliente.numero_telefono ? `+${cliente.codigo_pais_telefono || ''} ${cliente.numero_telefono}` : 'N/A',
+        esPersonaNatural: true
+      };
+    }
+    
+    // Si es persona jurídica
+    if (cliente.persona_juridica) {
+      return {
+        nombre: cliente.persona_juridica.razon_social || 'Empresa sin nombre',
+        nit: cliente.persona_juridica.nit || 'N/A',
+        email: cliente.correo_electronico || 'N/A',
+        telefono: cliente.numero_telefono ? `+${cliente.codigo_pais_telefono || ''} ${cliente.numero_telefono}` : 'N/A',
+        esPersonaNatural: false
+      };
+    }
+
+    return {
+      nombre: 'Cliente sin información',
+      email: cliente.correo_electronico || 'N/A',
+      telefono: 'N/A',
+      esPersonaNatural: true
+    };
+  };
+
+  const clienteInfo = getClienteInfo();
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-xl">
@@ -102,39 +148,37 @@ const OrderViewModal = ({ isOpen, onClose, order }) => {
                 </div>
               </div>
 
-              {/* Información del cliente */}
-              {order.cliente && (
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Información del Cliente
-                  </h3>
-                  <div className="space-y-3">
+              {/* Información del cliente - ✅ FIX APLICADO */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Información del Cliente
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">
+                      {clienteInfo.esPersonaNatural ? "Nombre:" : "Razón Social:"}
+                    </span>
+                    <span className="font-medium text-right">{clienteInfo.nombre}</span>
+                  </div>
+                  {!clienteInfo.esPersonaNatural && clienteInfo.nit && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">
-                        {order.cliente.persona_natural ? "Nombre:" : "NIT:"}
-                      </span>
-                      <span className="ml-2">
-                        {order.cliente.persona_natural
-                          ? `${order.cliente.persona_natural.nombre} ${order.cliente.persona_natural.apellido}`
-                          : order.cliente.persona_juridica?.nit}
-                      </span>
+                      <span className="text-gray-600">NIT:</span>
+                      <span className="font-medium">{clienteInfo.nit}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span className="font-medium text-blue-600">{order.cliente.correo_electronico}</span>
-                    </div>
-                    {order.cliente.numero_telefono && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Teléfono:</span>
-                        <span className="font-medium">+{order.cliente.codigo_pais_telefono} {order.cliente.numero_telefono}</span>
-                      </div>
-                    )}
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Email:</span>
+                    <span className="font-medium text-blue-600 break-all text-right">{clienteInfo.email}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Teléfono:</span>
+                    <span className="font-medium">{clienteInfo.telefono}</span>
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Fechas importantes */}
               <div className="bg-gray-50 rounded-lg p-6">

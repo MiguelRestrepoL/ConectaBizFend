@@ -39,6 +39,32 @@ const OrderCard = ({
     return colors[estado?.toLowerCase()] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
+  // Obtener nombre del cliente de forma segura
+  const getClienteName = () => {
+    if (!order.cliente) return 'Sin cliente';
+    
+    if (order.cliente.persona_natural) {
+      const nombre = order.cliente.persona_natural.nombre || '';
+      const apellido = order.cliente.persona_natural.apellido || '';
+      return `${nombre} ${apellido}`.trim() || 'Sin nombre';
+    }
+    
+    if (order.cliente.persona_juridica) {
+      return order.cliente.persona_juridica.razon_social || order.cliente.persona_juridica.nit || 'Empresa';
+    }
+    
+    if (order.cliente.nombre) {
+      return order.cliente.nombre;
+    }
+    
+    return 'Sin nombre';
+  };
+
+  // ✅ Handler para ir a seguimiento
+  const handleTracking = () => {
+    window.location.href = `/seguimiento/${order.id}`;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border border-gray-200">
       {/* Card Content */}
@@ -61,6 +87,16 @@ const OrderCard = ({
 
             {/* Botones de Acción - MÓVIL (solo iconos) */}
             <div className="flex sm:hidden items-center gap-1">
+              {/* ✅ NUEVO: Botón Seguimiento */}
+              <button
+                onClick={handleTracking}
+                className="p-1.5 hover:bg-purple-50 rounded-lg transition-colors"
+                title="Seguimiento"
+              >
+                <svg style={{ width: '18px', height: '18px' }} className="text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+              </button>
               <button
                 onClick={() => onView(order)}
                 className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
@@ -111,6 +147,17 @@ const OrderCard = ({
 
             {/* Botones de Acción - DESKTOP (con texto) */}
             <div className="hidden sm:flex items-center gap-2">
+              {/* ✅ NUEVO: Botón Seguimiento Desktop */}
+              <button
+                onClick={handleTracking}
+                className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-purple-50 rounded-lg transition-colors text-purple-600"
+                style={{ fontSize: '13px' }}
+              >
+                <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                <span className="hidden md:inline">Seguimiento</span>
+              </button>
               <button
                 onClick={() => onView(order)}
                 className="flex items-center gap-1.5 px-3 py-1.5 hover:bg-blue-50 rounded-lg transition-colors text-blue-600"
@@ -149,19 +196,19 @@ const OrderCard = ({
         {/* BODY: Info del Cliente */}
         <div className="space-y-2 mb-4">
           {/* Cliente */}
-          <div className="flex items-center gap-2 text-gray-600">
-            <svg style={{ width: '16px', height: '16px' }} className="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 text-gray-700">
+            <svg style={{ width: '16px', height: '16px' }} className="flex-shrink-0 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className="text-sm truncate" title={order.cliente?.nombre}>
-              {order.cliente?.nombre || 'Sin cliente'}
+            <span className="text-sm truncate font-medium" title={getClienteName()}>
+              {getClienteName()}
             </span>
           </div>
 
           {/* Fecha de entrega */}
           {order.fecha_entrega && (
-            <div className="flex items-center gap-2 text-gray-600">
-              <svg style={{ width: '16px', height: '16px' }} className="flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-2 text-gray-700">
+              <svg style={{ width: '16px', height: '16px' }} className="flex-shrink-0 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-sm">
@@ -172,7 +219,7 @@ const OrderCard = ({
 
           {/* Descripción (solo desktop) */}
           {order.descripcion && (
-            <p className="hidden lg:block text-sm text-gray-500 line-clamp-2" title={order.descripcion}>
+            <p className="hidden lg:block text-sm text-gray-600 line-clamp-2" title={order.descripcion}>
               {order.descripcion}
             </p>
           )}
@@ -180,21 +227,21 @@ const OrderCard = ({
 
         {/* FOOTER: Montos */}
         <div className="grid grid-cols-2 gap-2 sm:gap-4">
-{/* Total Pagado */}
-<div className="bg-green-50 rounded-lg border border-green-200 p-2.5 sm:p-3">
-  <span className="text-xs text-gray-600 block mb-1">Total Pagado</span>
-  <span className="text-sm sm:text-base font-semibold text-green-600 block truncate">
-    {formatCurrency(order.monto_total_pagado)}
-  </span>
-</div>
+          {/* Total Pagado */}
+          <div className="bg-green-50 rounded-lg border border-green-200 p-2.5 sm:p-3">
+            <span className="text-xs text-gray-700 block mb-1 font-medium">Total Pagado</span>
+            <span className="text-sm sm:text-base font-bold text-green-700 block truncate">
+              {formatCurrency(order.monto_total_pagado)}
+            </span>
+          </div>
 
-{/* Sin IVA */}
-<div className="bg-blue-50 rounded-lg border border-blue-200 p-2.5 sm:p-3">
-  <span className="text-xs text-gray-600 block mb-1">Sin IVA</span>
-  <span className="text-sm sm:text-base font-semibold text-blue-600 block truncate">
-    {formatCurrency(order.monto_recibido_sin_iva)}
-  </span>
-</div>
+          {/* Sin IVA */}
+          <div className="bg-blue-50 rounded-lg border border-blue-200 p-2.5 sm:p-3">
+            <span className="text-xs text-gray-700 block mb-1 font-medium">Sin IVA</span>
+            <span className="text-sm sm:text-base font-bold text-blue-700 block truncate">
+              {formatCurrency(order.monto_recibido_sin_iva)}
+            </span>
+          </div>
         </div>
 
       </div>

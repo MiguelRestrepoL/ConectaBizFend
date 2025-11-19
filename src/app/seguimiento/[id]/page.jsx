@@ -1,43 +1,51 @@
 'use client';
 
-import { useParams } from "next/navigation";
-import { getOrderById } from '../../api/orders'
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Layout from '../../components/Layout';
 import OrderTrackingPage from '../../components/OrderTrackingPage';
-import Sidebar from '../../components/Sidebar'
+import { getOrderById } from '../../api/orders';
 
+export default function SeguimientoPedido() {
+  const params = useParams();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export default function Seguimiento() {
-    const params = useParams();
-    const id = params.id;
+  useEffect(() => {
+    if (params.id) {
+      loadOrder();
+    }
+  }, [params.id]);
 
-    const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const loadOrder = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    useEffect(() => {
-        const fetchOrder = async () => {
-            try {
-                const response = await getOrderById(id);
-                console.log(response.data.pedido);
-                // Extrae pedido de la data
-                setOrder(response.data.pedido);
-                setLoading(false);
-            } catch (err) {
-                console.error(err);
-                setError(err.message || 'Error al cargar el pedido');
-                setLoading(false);
-            }
-        };
-        fetchOrder();
-    }, [id]);
+      const result = await getOrderById(params.id);
 
-    return (
-        <main>
-            <Sidebar/>
-            <OrderTrackingPage order={order} loading={loading} error={error} />
-        </main>
+      if (result.success) {
+        const orderData = result.data.pedido || result.data;
+        setOrder(orderData);
+      } else {
+        setError(result.error || 'Error al cargar el pedido');
+      }
+    } catch (err) {
+      setError(err.message || 'Error al cargar el pedido');
+      console.error('Error loading order:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    )
-
+  return (
+    <Layout>
+      <OrderTrackingPage 
+        order={order} 
+        loading={loading} 
+        error={error} 
+      />
+    </Layout>
+  );
 }

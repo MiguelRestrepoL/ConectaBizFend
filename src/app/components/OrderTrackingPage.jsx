@@ -1,14 +1,15 @@
-'use client'
+'use client';
+
 import { useEffect, useState } from "react";
-import OrderStatusBadge from '../components/OrderStatusBadge'
-import OrderTimeline from '../components/OrderTimeLine'
-import OrderInfoCard from '../components/OrderInfoCard'
+import OrderStatusBadge from '../components/OrderStatusBadge';
+import OrderTimeline from '../components/OrderTimeLine';
+import OrderInfoCard from '../components/OrderInfoCard';
 import { Package, Clock, CheckCircle, Truck, Calendar, DollarSign, FileText, User, ArrowLeft } from 'lucide-react';
-import Link from "next/link";
-import GuiaSeguimientoPDF from "../../app/components/GuiaSeguimientoPDF"
+import GuiaSeguimientoPDF from "../../app/components/GuiaSeguimientoPDF";
 
 export default function OrderTrackingPage({ order, loading, error }) {
   const formatDate = (dateString) => {
+    if (!dateString) return 'No disponible';
     return new Date(dateString).toLocaleDateString('es-ES', {
       year: 'numeric',
       month: 'long',
@@ -19,8 +20,26 @@ export default function OrderTrackingPage({ order, loading, error }) {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'COP'
-    }).format(amount);
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
+  };
+
+  // ✅ FIX: Obtener nombre del cliente de forma segura
+  const getClienteName = () => {
+    if (!order || !order.cliente) return 'Sin cliente';
+    
+    if (order.cliente.persona_natural) {
+      const nombre = order.cliente.persona_natural.nombre || '';
+      const apellido = order.cliente.persona_natural.apellido || '';
+      return `${nombre} ${apellido}`.trim() || 'Sin nombre';
+    }
+    
+    if (order.cliente.persona_juridica) {
+      return order.cliente.persona_juridica.razon_social || 'Empresa';
+    }
+    
+    return 'Sin nombre';
   };
 
   if (loading) {
@@ -59,45 +78,48 @@ export default function OrderTrackingPage({ order, loading, error }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
-        <Link href="/pedidos" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Volver a pedidos</span>
-        </Link>
+          <span className="font-medium">Volver</span>
+        </button>
 
-        {/* 🔹 Header del pedido con botón */}
+        {/* Header del pedido con botón */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
+            <div className="flex-1">
               <div className="flex items-center gap-2 text-gray-500 text-sm mb-2">
                 <Package className="w-4 h-4" />
                 <span>Orden #{order.id}</span>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{order.titulo}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{order.titulo}</h1>
               {order.descripcion && (
-                <p className="text-gray-600">{order.descripcion}</p>
+                <p className="text-gray-600 text-sm sm:text-base">{order.descripcion}</p>
               )}
             </div>
 
-            {/* 🔹 Botón + estado */}
-            <div className="flex flex-col items-end gap-3">
+            {/* Botón + estado */}
+            <div className="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
               <OrderStatusBadge estado={order.estado} />
               <GuiaSeguimientoPDF order={order} />
             </div>
           </div>
         </div>
 
-        {/* 🔹 Timeline */}
-        <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
+        {/* Timeline */}
+        <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Estado del Pedido</h2>
           <OrderTimeline estado={order.estado} />
         </div>
 
-        {/* 🔹 Información detallada */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {/* Información detallada */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <OrderInfoCard
             icon={<User className="w-5 h-5" />}
             label="Cliente"
-            value={order.cliente?.persona_natural?.nombre || order.cliente?.persona_juridica?.razon_social}
+            value={getClienteName()}
           />
           <OrderInfoCard
             icon={<Calendar className="w-5 h-5" />}
@@ -116,7 +138,7 @@ export default function OrderTrackingPage({ order, loading, error }) {
           />
         </div>
 
-        {/* 🔹 Información adicional */}
+        {/* Información adicional */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Información Adicional</h2>
           <div className="space-y-3 text-sm">
@@ -131,7 +153,7 @@ export default function OrderTrackingPage({ order, loading, error }) {
             {order.cliente?.correo_electronico && (
               <div className="flex justify-between py-2">
                 <span className="text-gray-600">Email del cliente:</span>
-                <span className="font-medium text-gray-900">{order.cliente.correo_electronico}</span>
+                <span className="font-medium text-gray-900 break-all">{order.cliente.correo_electronico}</span>
               </div>
             )}
           </div>
