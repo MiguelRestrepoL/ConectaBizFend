@@ -140,7 +140,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
 
           {/* Descripción */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               Descripción
             </label>
             <textarea
