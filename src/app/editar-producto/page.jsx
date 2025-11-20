@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '../../components/Layout';
-import ProductForm from '../../components/ProductForm';
+import ProductForm from '../components/ProductForm';
 import AlertModal from '../../components/AlertModal';
 import { getProductById, updateProduct } from '../../api/products';
 
