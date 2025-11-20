@@ -43,8 +43,7 @@ const ProfilePage = () => {
   const handleUpdateProfile = async (profileData) => {
     setLoading(true);
     try {
-      // Obtener el ID del usuario desde el token o localStorage
-      const userId = localStorage.getItem('userId') || '1'; // Temporal, debería venir del token
+      const userId = localStorage.getItem('userId') || '1';
       
       const response = await profileService.updateProfile(userId, profileData);
       
@@ -80,7 +79,6 @@ const ProfilePage = () => {
       if (type === 'correo') {
         await profileService.activateEmail2FA(userId, user.email);
       } else if (type === 'aplicación') {
-        // Aquí necesitarías obtener el número de teléfono del formulario
         await profileService.activateApp2FA(userId, '+XX XXXXXXXXXX');
       }
       
@@ -91,7 +89,6 @@ const ProfilePage = () => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     if (message.text) {
@@ -105,18 +102,18 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-white">
       <Sidebar activeItem="perfil" />
-      <div className="ml-64">
+      <div className="ml-0 md:ml-64">
         <Header userName="Usuario" />
         
-        <main className="p-8 pt-24">
+        <main className="p-4 md:p-8 pt-20 md:pt-24">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">
               Administración de tu cuenta
             </h1>
 
             {/* Mensaje de estado */}
             {message.text && (
-              <div className={`mb-6 p-4 rounded-lg ${
+              <div className={`mb-4 md:mb-6 p-3 md:p-4 rounded-lg ${
                 message.type === 'success' 
                   ? 'bg-green-100 text-green-800 border border-green-200' 
                   : 'bg-red-100 text-red-800 border border-red-200'
