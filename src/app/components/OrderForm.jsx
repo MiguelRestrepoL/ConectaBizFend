@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import FormField from './FormField';
 import SelectField from './SelectField';
 import { getClients } from '../api/clients';
-import { getProducts } from '../api/products';
+import { getProducts } from '../api/products'; // ← Asumiendo que tienes esta función
 
 // Definir la tasa de IVA (19% en Colombia)
 const IVA_RATE = 0.19;
@@ -24,10 +24,12 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
   const [clients, setClients] = useState([]);
   const [loadingClients, setLoadingClients] = useState(true);
   
+  // ✅ NUEVO: Estados para productos
   const [productos, setProductos] = useState([]);
   const [loadingProductos, setLoadingProductos] = useState(true);
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
 
+  // Cargar productos del pedido si estamos editando
   useEffect(() => {
     if (initialData && initialData.productos) {
       const productosExistentes = initialData.productos.map(p => ({
@@ -41,6 +43,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     }
   }, [initialData]);
 
+  // Calcular monto_recibido_sin_iva automáticamente cuando cambie monto_total_pagado
   useEffect(() => {
     const total = parseFloat(formData.monto_total_pagado);
     if (!isNaN(total) && total > 0) {
@@ -57,10 +60,12 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     }
   }, [formData.monto_total_pagado]);
 
+  // ✅ Recalcular totales cuando cambien los productos
   useEffect(() => {
     calcularTotalesDesdeProductos();
   }, [productosSeleccionados]);
 
+  // Cargar clientes para el select
   useEffect(() => {
     const loadClients = async () => {
       try {
@@ -81,6 +86,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     loadClients();
   }, []);
 
+  // ✅ Cargar productos disponibles
   useEffect(() => {
     const loadProductos = async () => {
       try {
@@ -101,6 +107,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     loadProductos();
   }, []);
 
+  // Actualizar formData cuando cambien los initialData
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
@@ -121,6 +128,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     }
   };
 
+  // ✅ AGREGAR PRODUCTO AL PEDIDO
   const handleAgregarProducto = (e) => {
     e.preventDefault();
     const productoId = parseInt(e.target.producto.value);
@@ -157,10 +165,12 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     e.target.cantidad.value = '1';
   };
 
+  // ✅ ELIMINAR PRODUCTO
   const handleEliminarProducto = (productoId) => {
     setProductosSeleccionados(prev => prev.filter(p => p.producto_id !== productoId));
   };
 
+  // ✅ ACTUALIZAR CANTIDAD
   const handleCantidadChange = (productoId, nuevaCantidad) => {
     if (nuevaCantidad < 1) return;
 
@@ -173,6 +183,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     }));
   };
 
+  // ✅ CALCULAR TOTALES DESDE PRODUCTOS
   const calcularTotalesDesdeProductos = () => {
     const totalSinIva = productosSeleccionados.reduce((sum, p) => sum + p.subtotal, 0);
     const totalConIva = totalSinIva * (1 + IVA_RATE);
@@ -259,7 +270,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
             </label>
             <div className="border border-gray-300 rounded-lg overflow-hidden">
               <div className="bg-gray-50 border-b border-gray-300 p-1.5 sm:p-2 flex flex-wrap gap-0.5 sm:gap-1">
-                <select className="px-1.5 sm:px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded text-black">
+                <select className="px-1.5 sm:px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded">
                   <option>Párrafo</option>
                   <option>H1</option>
                   <option>H2</option>
@@ -299,7 +310,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
               <textarea
                 value={formData.descripcion}
                 onChange={(e) => handleInputChange('descripcion', e.target.value)}
-                className="w-full p-3 sm:p-4 border-0 focus:ring-0 resize-none text-sm sm:text-base text-black"
+                className="w-full p-3 sm:p-4 border-0 focus:ring-0 resize-none text-sm sm:text-base"
                 rows={6}
                 style={{ minHeight: '120px' }}
                 placeholder="Escribir descripción aquí..."
@@ -318,7 +329,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
         </div>
       </div>
 
-      {/* CARD: PRODUCTOS DEL PEDIDO */}
+      {/* ✅ CARD: PRODUCTOS DEL PEDIDO */}
       <div className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-200 p-4 sm:p-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Productos del Pedido
@@ -330,7 +341,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
             <div className="flex-1">
               <select
                 name="producto"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base"
                 disabled={loadingProductos}
               >
                 <option value="">
@@ -351,7 +362,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                 defaultValue="1"
                 min="1"
                 placeholder="Cant."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base text-black"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base"
               />
             </div>
 
@@ -382,7 +393,6 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
 
                   <div className="flex items-center gap-2">
                     <button
-                      type="button"
                       onClick={() => handleCantidadChange(producto.producto_id, producto.cantidad - 1)}
                       className="w-7 h-7 bg-gray-200 hover:bg-gray-300 rounded font-bold"
                     >
@@ -390,14 +400,12 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                     </button>
                     <span className="w-8 text-center font-bold">{producto.cantidad}</span>
                     <button
-                      type="button"
                       onClick={() => handleCantidadChange(producto.producto_id, producto.cantidad + 1)}
                       className="w-7 h-7 bg-gray-200 hover:bg-gray-300 rounded font-bold"
                     >
                       +
                     </button>
                     <button
-                      type="button"
                       onClick={() => handleEliminarProducto(producto.producto_id)}
                       className="p-2 bg-red-100 hover:bg-red-200 rounded ml-2"
                     >
@@ -460,7 +468,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                   min="0"
                   value={formData.monto_total_pagado}
                   readOnly
-                  className="block w-full pl-7 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base text-black"
+                  className="block w-full pl-7 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base"
                   placeholder="0.00"
                 />
               </div>
@@ -481,7 +489,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
                   min="0"
                   value={formData.monto_recibido_sin_iva}
                   readOnly
-                  className="block w-full pl-7 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base text-black"
+                  className="block w-full pl-7 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm sm:text-base"
                   placeholder="0.00"
                 />
               </div>
@@ -524,7 +532,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
           disabled={loading}
           className="w-full sm:w-auto bg-black text-white px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 text-sm sm:text-base"
         >
-          {loading ? (isEdit ? 'Actualizando..' : 'Creando...') : (isEdit ? 'Actualizar Pedido' : 'Crear Pedido')}
+          {loading ? (isEdit ? 'Actualizando...' : 'Creando...') : (isEdit ? 'Actualizar Pedido' : 'Crear Pedido')}
         </button>
       </div>
     </form>
