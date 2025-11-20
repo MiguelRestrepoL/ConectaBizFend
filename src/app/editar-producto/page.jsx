@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Layout from '../../components/Layout';
+import Layout from '../components/Layout';
 import ProductForm from '../components/ProductForm';
-import AlertModal from '../../components/AlertModal';
-import { getProductById, updateProduct } from '../../api/products';
+import AlertModal from '../components/AlertModal';
+import { getProductById, updateProduct } from '../api/products';
 
 export default function EditarProducto() {
   const params = useParams();
