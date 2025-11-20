@@ -13,10 +13,11 @@ const SelectField = ({
 }) => {
   return (
     <div className={`flex flex-col ${className}`}>
-      <label className="text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-900 mb-2">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
+
       <select
         value={value}
         onChange={onChange}
@@ -32,6 +33,7 @@ const SelectField = ({
           </option>
         ))}
       </select>
+
       {error && (
         <span className="text-red-500 text-sm mt-1">{error}</span>
       )}
