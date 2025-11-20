@@ -1,9 +1,9 @@
 import api from './auth.js';
 
-// Función para agregar un cliente
-export const addClient = async (clientData) => {
+// ✅ CREAR CLIENTE - Cambiado de addClient a createClient
+export const createClient = async (clientData) => {
   try {
-    console.log(clientData);
+    console.log('Creando cliente:', clientData);
 
     const response = await api.post('/clients', clientData);
 
@@ -15,22 +15,18 @@ export const addClient = async (clientData) => {
   } catch (error) {
     console.error('Error al crear cliente:', error);
 
-    // Manejar diferentes tipos de errores
     if (error.response) {
-      // El servidor respondió con un código de error
       return {
         success: false,
-        error: error.response.data?.message || 'Error del servidor',
+        error: error.response.data?.message || error.response.data?.error || 'Error del servidor',
         status: error.response.status
       };
     } else if (error.request) {
-      // La petición se hizo pero no se recibió respuesta
       return {
         success: false,
         error: 'Error de conexión. Verifica que el servidor esté funcionando.'
       };
     } else {
-      // Algo más pasó
       return {
         success: false,
         error: error.message || 'Error desconocido'
@@ -39,18 +35,17 @@ export const addClient = async (clientData) => {
   }
 };
 
-// Función para obtener todos los clientes
+// ✅ OBTENER TODOS LOS CLIENTES
 export const getClients = async (options = {}) => {
   try {
-    const { page = 1, limit = 10, search = '', includeInactive = false } = options;
+    const { page = 1, limit = 10, search = '', includeInactive = true } = options;
 
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      includeInactive: includeInactive.toString() // 👈 Siempre enviamos este parámetro
+      includeInactive: includeInactive.toString()
     });
 
-    // Si hay texto de búsqueda, lo agregamos
     if (search.trim()) {
       params.append('search', search.trim());
     }
@@ -73,8 +68,7 @@ export const getClients = async (options = {}) => {
   }
 };
 
-
-// Función para obtener un cliente por ID
+// ✅ OBTENER CLIENTE POR ID
 export const getClientById = async (id) => {
   try {
     const response = await api.get(`/clients/${id}`);
@@ -86,15 +80,18 @@ export const getClientById = async (id) => {
     console.error('Error al obtener cliente:', error);
     return {
       success: false,
-      error: error.response?.data?.message || 'Error al obtener cliente'
+      error: error.response?.data?.message || error.response?.data?.error || 'Error al obtener cliente'
     };
   }
 };
 
-// Función para actualizar un cliente
+// ✅ ACTUALIZAR CLIENTE
 export const updateClient = async (id, clientData) => {
   try {
+    console.log('Actualizando cliente:', id, clientData);
+    
     const response = await api.put(`/clients/${id}`, clientData);
+    
     return {
       success: true,
       data: response.data,
@@ -104,28 +101,31 @@ export const updateClient = async (id, clientData) => {
     console.error('Error al actualizar cliente:', error);
     return {
       success: false,
-      error: error.response?.data?.message || 'Error al actualizar cliente'
+      error: error.response?.data?.message || error.response?.data?.error || 'Error al actualizar cliente'
     };
   }
 };
 
-// Función para eliminar un cliente
+// ✅ ELIMINAR CLIENTE (Soft delete)
 export const deleteClient = async (id) => {
   try {
-    await api.delete(`/clients/${id}`);
+    const response = await api.delete(`/clients/${id}`);
+    
     return {
       success: true,
+      data: response.data,
       message: 'Cliente eliminado exitosamente'
     };
   } catch (error) {
     console.error('Error al eliminar cliente:', error);
     return {
       success: false,
-      error: error.response?.data?.message || 'Error al eliminar cliente'
+      error: error.response?.data?.message || error.response?.data?.error || 'Error al eliminar cliente'
     };
   }
 };
 
+// ✅ ACTUALIZAR ESTADO DEL CLIENTE
 export const updateClientState = async (clientId, state) => {
   try {
     const response = await api.patch(`/clients/${clientId}/state`, {
@@ -134,7 +134,8 @@ export const updateClientState = async (clientId, state) => {
 
     return {
       success: true,
-      data: response.data
+      data: response.data,
+      message: state ? 'Cliente activado exitosamente' : 'Cliente desactivado exitosamente'
     };
   } catch (error) {
     console.error('Error al actualizar estado del cliente:', error);
@@ -148,8 +149,9 @@ export const updateClientState = async (clientId, state) => {
   }
 };
 
+// Exportación por defecto
 export default {
-  addClient,
+  createClient,
   getClients,
   getClientById,
   updateClient,
