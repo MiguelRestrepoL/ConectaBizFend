@@ -524,7 +524,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
           disabled={loading}
           className="w-full sm:w-auto bg-black text-white px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 text-sm sm:text-base"
         >
-          {loading ? (isEdit ? 'Actualizando...' : 'Creando...') : (isEdit ? 'Actualizar Pedido' : 'Crear Pedido')}
+          {loading ? (isEdit ? 'Actualizando..' : 'Creando...') : (isEdit ? 'Actualizar Pedido' : 'Crear Pedido')}
         </button>
       </div>
     </form>
