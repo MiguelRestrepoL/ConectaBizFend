@@ -176,7 +176,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
                 min="0"
                 value={formData.precio}
                 onChange={(e) => handleInputChange('precio', e.target.value)}
-                className="block w-full pl-7 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                className="block w-full pl-7 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base text-black"
                 placeholder="0.00"
                 required
               />

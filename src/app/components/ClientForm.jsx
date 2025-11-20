@@ -55,12 +55,12 @@ const calcularDigitoVerificacion = (nit) => {
 // 🎨 COMPONENTES BÁSICOS RESPONSIVE
 const FormField = ({ label, error, required, ...props }) => (
   <div>
-    <label className="text-sm font-medium text-gray-700 mb-2 block">
+    <label className="text-sm font-medium text-black mb-2 block">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <input
       {...props}
-      className={`w-full px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base`}
+      className={`w-full px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base text-black`}
     />
     {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
   </div>
@@ -68,12 +68,12 @@ const FormField = ({ label, error, required, ...props }) => (
 
 const SelectField = ({ label, options, placeholder, error, required, ...props }) => (
   <div>
-    <label className="text-sm font-medium text-gray-700 mb-2 block">
+    <label className="text-sm font-medium text-black mb-2 block">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <select
       {...props}
-      className={`w-full px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base`}
+      className={`w-full px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base text-black`}
     >
       {placeholder && <option value="">{placeholder}</option>}
       {options.map(opt => (
@@ -97,7 +97,7 @@ const RadioGroup = ({ name, value, onChange, options, required }) => (
           required={required}
           className="mr-3 text-purple-600 focus:ring-purple-500 w-4 h-4"
         />
-        <span className="text-sm text-gray-700">{option.label}</span>
+        <span className="text-sm text-black">{option.label}</span>
       </label>
     ))}
   </div>
@@ -105,14 +105,14 @@ const RadioGroup = ({ name, value, onChange, options, required }) => (
 
 const PhoneInput = ({ label, value, onChange, countryCode, onCountryCodeChange, error, required }) => (
   <div>
-    <label className="text-sm font-medium text-gray-700 mb-2 block">
+    <label className="text-sm font-medium text-black mb-2 block">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="flex gap-2">
       <select
         value={countryCode}
         onChange={onCountryCodeChange}
-        className="w-20 sm:w-24 px-2 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+        className="w-20 sm:w-24 px-2 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base text-black"
       >
         <option value="+57">🇨🇴 +57</option>
         <option value="+1">🇺🇸 +1</option>
@@ -123,7 +123,7 @@ const PhoneInput = ({ label, value, onChange, countryCode, onCountryCodeChange, 
         type="tel"
         value={value}
         onChange={onChange}
-        className={`flex-1 px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
+        className={`flex-1 px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base text-black`}
       />
     </div>
     {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
@@ -136,7 +136,7 @@ const TextArea = ({ value, onChange, placeholder, rows = 4 }) => (
     onChange={onChange}
     placeholder={placeholder}
     rows={rows}
-    className="w-full px-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm sm:text-base"
+    className="w-full px-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm sm:text-base text-black"
   />
 );
 
@@ -163,7 +163,7 @@ const TagInput = ({ value = [], onChange, placeholder }) => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
           placeholder={placeholder}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base text-black"
         />
         <button
           type="button"
@@ -449,7 +449,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     }
   }, [formData.actividad_economica]);
 
-  const handleInputChange = (field, value) => {
+    const handleInputChange = (field, value) => {
     const processedValue = (value === null || value === undefined) ? '' : value;
 
     setFormData(prev => ({
@@ -597,7 +597,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center">
               <span className={`inline-block w-3 h-3 rounded-full mr-2 ${formData.estado === 'Activo' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-              <span className="font-medium text-sm sm:text-base">Estado del cliente: {formData.estado}</span>
+              <span className="font-medium text-sm sm:text-base text-black">Estado del cliente: {formData.estado}</span>
             </div>
             {formData.estado === 'Activo' && (
               <button
@@ -620,7 +620,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
           
           {/* CARD 1: Información del Cliente */}
           <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-black mb-4">Información del Cliente</h3>
 
             {/* Tipo de cliente (Radio buttons) */}
             <div className="mb-4 sm:mb-6">
@@ -759,7 +759,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
           {/* CARD 2: Información de Contacto */}
           <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Información de Contacto</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-black mb-4">Información de Contacto</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
@@ -800,7 +800,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                   onChange={(e) => handleInputChange('recibe_emails_marketing', e.target.checked)}
                   className="mr-3 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
                 />
-                <span className="text-sm text-gray-700">Acepta recibir emails de marketing</span>
+                <span className="text-sm text-black">Acepta recibir emails de marketing</span>
               </label>
 
               <label className="flex items-center cursor-pointer">
@@ -810,14 +810,14 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                   onChange={(e) => handleInputChange('recibe_sms_marketing', e.target.checked)}
                   className="mr-3 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
                 />
-                <span className="text-sm text-gray-700">Acepta recibir SMS de marketing</span>
+                <span className="text-sm text-black">Acepta recibir SMS de marketing</span>
               </label>
             </div>
           </div>
 
           {/* CARD 3: Dirección */}
           <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Dirección</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-black mb-4">Dirección</h3>
             
             <div className="space-y-4">
               <FormField
@@ -892,11 +892,11 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
           {/* CARD 4: Notas y Etiquetas */}
           <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Notas y Etiquetas</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-black mb-4">Notas y Etiquetas</h3>
             
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Notas</label>
+                <label className="text-sm font-medium text-black mb-2 block">Notas</label>
                 <TextArea
                   value={formData.notas}
                   onChange={(e) => handleInputChange('notas', e.target.value)}
@@ -906,7 +906,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Etiquetas</label>
+                <label className="text-sm font-medium text-black mb-2 block">Etiquetas</label>
                 <TagInput
                   value={formData.etiquetas}
                   onChange={(newTags) => handleInputChange('etiquetas', newTags)}
@@ -922,7 +922,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
           
           {/* CARD: Impuestos */}
           <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Impuestos</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-black mb-4">Impuestos</h3>
             
             <RadioGroup
               name="recaudar_impuestos"
