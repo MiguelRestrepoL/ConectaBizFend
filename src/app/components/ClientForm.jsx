@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 
 // Datos de actividades económicas y CIIU (ejemplo)
@@ -50,7 +52,7 @@ const calcularDigitoVerificacion = (nit) => {
   }
 };
 
-// Componentes básicos
+// 🎨 COMPONENTES BÁSICOS RESPONSIVE
 const FormField = ({ label, error, required, ...props }) => (
   <div>
     <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -58,9 +60,9 @@ const FormField = ({ label, error, required, ...props }) => (
     </label>
     <input
       {...props}
-      className={`w-full px-3 py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+      className={`w-full px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base`}
     />
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
   </div>
 );
 
@@ -71,14 +73,14 @@ const SelectField = ({ label, options, placeholder, error, required, ...props })
     </label>
     <select
       {...props}
-      className={`w-full px-3 py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+      className={`w-full px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base`}
     >
       {placeholder && <option value="">{placeholder}</option>}
       {options.map(opt => (
         <option key={opt.value} value={opt.value}>{opt.label}</option>
       ))}
     </select>
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
   </div>
 );
 
@@ -93,7 +95,7 @@ const RadioGroup = ({ name, value, onChange, options, required }) => (
           checked={value === option.value}
           onChange={onChange}
           required={required}
-          className="mr-3 text-blue-600 focus:ring-blue-500"
+          className="mr-3 text-purple-600 focus:ring-purple-500 w-4 h-4"
         />
         <span className="text-sm text-gray-700">{option.label}</span>
       </label>
@@ -110,7 +112,7 @@ const PhoneInput = ({ label, value, onChange, countryCode, onCountryCodeChange, 
       <select
         value={countryCode}
         onChange={onCountryCodeChange}
-        className="w-24 px-2 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-20 sm:w-24 px-2 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
       >
         <option value="+57">🇨🇴 +57</option>
         <option value="+1">🇺🇸 +1</option>
@@ -121,10 +123,10 @@ const PhoneInput = ({ label, value, onChange, countryCode, onCountryCodeChange, 
         type="tel"
         value={value}
         onChange={onChange}
-        className={`flex-1 px-3 py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        className={`flex-1 px-3 py-2.5 sm:py-3 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base`}
       />
     </div>
-    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    {error && <p className="text-red-500 text-xs sm:text-sm mt-1">{error}</p>}
   </div>
 );
 
@@ -134,7 +136,7 @@ const TextArea = ({ value, onChange, placeholder, rows = 4 }) => (
     onChange={onChange}
     placeholder={placeholder}
     rows={rows}
-    className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+    className="w-full px-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm sm:text-base"
   />
 );
 
@@ -161,12 +163,12 @@ const TagInput = ({ value = [], onChange, placeholder }) => {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
           placeholder={placeholder}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
         />
         <button
           type="button"
           onClick={addTag}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm sm:text-base whitespace-nowrap"
         >
           Agregar
         </button>
@@ -175,13 +177,13 @@ const TagInput = ({ value = [], onChange, placeholder }) => {
         {value.map((tag, index) => (
           <span
             key={index}
-            className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+            className="inline-flex items-center px-2.5 sm:px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs sm:text-sm"
           >
             {tag}
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className="ml-2 text-blue-600 hover:text-blue-800"
+              className="ml-1.5 sm:ml-2 text-purple-600 hover:text-purple-800 font-bold"
             >
               ×
             </button>
@@ -237,22 +239,17 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
   const [ciudades, setCiudades] = useState([]);
   const [loadingGeo, setLoadingGeo] = useState(false);
 
-  // Actualizado: Este useEffect ahora maneja correctamente los datos iniciales
+  // useEffects para cargar datos iniciales, países, departamentos, ciudades, etc.
   useEffect(() => {
     if (initialData) {
       console.log('Datos iniciales recibidos:', initialData);
       
-      // Verificar si los datos ya vienen procesados (formato plano)
-      // o si necesitan ser extraídos de la estructura anidada
       const hasNestedStructure = initialData.tipo_cliente && 
         (initialData.persona_natural || initialData.persona_juridica);
       
       if (hasNestedStructure) {
-        // Los datos vienen en estructura anidada, no hacer nada
-        // porque ya fueron procesados por convertClientToFormData
         setFormData(initialData);
       } else {
-        // Los datos ya vienen en formato plano
         setFormData(prev => ({
           ...prev,
           ...initialData
@@ -263,7 +260,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     }
   }, [initialData]);
 
-  // Cargar lista de países con geonameId al montar el componente
   useEffect(() => {
     const cargarPaises = async () => {
       try {
@@ -276,7 +272,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
         const paisesConGeoId = await Promise.all(
           data.map(async (pais) => {
             try {
-              // Buscar el geonameId del país en GeoNames
               const geoResponse = await fetch(
                 `https://secure.geonames.org/searchJSON?q=${encodeURIComponent(pais.name.common)}&featureCode=PCLI&maxRows=1&username=keivch1304`
               );
@@ -311,7 +306,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     cargarPaises();
   }, []);
 
-  // Cargar departamentos cuando cambia el país
   useEffect(() => {
     const cargarDepartamentos = async () => {
       if (!formData.pais_residencia) {
@@ -359,7 +353,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     cargarDepartamentos();
   }, [formData.pais_residencia, paises]);
 
-  // Cargar ciudades cuando cambia el departamento
   useEffect(() => {
     const cargarCiudades = async () => {
       if (!formData.departamento_estado) {
@@ -379,7 +372,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
         console.log('Buscando ciudades para departamento:', deptoSeleccionado);
 
-        // Primero intentamos con children
         let response = await fetch(
           `https://secure.geonames.org/childrenJSON?geonameId=${deptoSeleccionado.geonameId}&username=keivch1304`
         );
@@ -387,7 +379,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
 
         let ciudadesEncontradas = [];
 
-        // Si childrenJSON no devuelve resultados, intentamos con search
         if (!data.geonames || data.geonames.length === 0) {
           console.log('Intentando búsqueda alternativa de ciudades...');
           response = await fetch(
@@ -397,7 +388,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
         }
 
         if (data.geonames && data.geonames.length > 0) {
-          // Filtramos ciudades (feature class P = populated places)
           ciudadesEncontradas = data.geonames
             .filter(lugar => 
               lugar.fcl === 'P' || 
@@ -432,7 +422,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     cargarCiudades();
   }, [formData.departamento_estado, departamentos, formData.pais_residencia, paises]);
 
-  // Calcular DV automáticamente cuando cambia el NIT
   useEffect(() => {
     if (formData.nit && formData.tipo_cliente === 'persona_juridica') {
       const dv = calcularDigitoVerificacion(formData.nit);
@@ -445,7 +434,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     }
   }, [formData.nit, formData.tipo_cliente]);
 
-  // Actualizar opciones de CIIU cuando cambia la actividad económica
   useEffect(() => {
     if (formData.actividad_economica && actividadesEconomicas[formData.actividad_economica]) {
       setCiuuOptions(actividadesEconomicas[formData.actividad_economica]);
@@ -469,7 +457,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
       [field]: processedValue
     }));
 
-    // Limpiar campos dependientes cuando cambia el país
     if (field === 'pais_residencia') {
       setFormData(prev => ({
         ...prev,
@@ -481,7 +468,6 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
       setCiudades([]);
     }
 
-    // Limpiar ciudad cuando cambia el departamento
     if (field === 'departamento_estado') {
       setFormData(prev => ({
         ...prev,
@@ -604,19 +590,20 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      {/* BADGE DE ESTADO (solo en edit) */}
       {isEdit && (
         <div className={`p-4 rounded-lg ${formData.estado === 'Activo' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center">
               <span className={`inline-block w-3 h-3 rounded-full mr-2 ${formData.estado === 'Activo' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-              <span className="font-medium">Estado del cliente: {formData.estado}</span>
+              <span className="font-medium text-sm sm:text-base">Estado del cliente: {formData.estado}</span>
             </div>
             {formData.estado === 'Activo' && (
               <button
                 type="button"
                 onClick={handleInactivate}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
               >
                 Inactivar Cliente
               </button>
@@ -625,12 +612,18 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
+      {/* GRID RESPONSIVE: 2 columnas en desktop, 1 en móvil */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        
+        {/* COLUMNA IZQUIERDA (2/3 en desktop) */}
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          
+          {/* CARD 1: Información del Cliente */}
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
 
-            <div className="mb-6">
+            {/* Tipo de cliente (Radio buttons) */}
+            <div className="mb-4 sm:mb-6">
               <RadioGroup
                 name="tipo_cliente"
                 value={formData.tipo_cliente}
@@ -640,6 +633,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
               />
             </div>
 
+            {/* Grid de campos: 1 columna móvil, 2 desktop */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {formData.tipo_cliente === 'persona_natural' && (
                 <>
@@ -694,7 +688,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                         error={errors.nit}
                       />
                     </div>
-                    <div className="w-20">
+                    <div className="w-16 sm:w-20">
                       <FormField
                         label="DV"
                         value={formData.digito_verificacion}
@@ -735,8 +729,8 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                     value={formData.codigo_ciiu}
                     onChange={(e) => handleInputChange('codigo_ciiu', e.target.value)}
                     options={ciuuOptions.map(c => ({ value: c.codigo, label: `${c.codigo} - ${c.descripcion}` }))}
-                    placeholder={formData.actividad_economica ? "Seleccionar código CIIU" : "Primero seleccione actividad económica"}
-                    disabled={!formData.actividad_economica}
+                    placeholder={ciuuOptions.length > 0 ? "Seleccionar código" : "Primero seleccione una actividad económica"}
+                    disabled={ciuuOptions.length === 0}
                   />
                   <FormField
                     label="Fecha de Constitución"
@@ -749,8 +743,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                     type="number"
                     value={formData.capital_social}
                     onChange={(e) => handleInputChange('capital_social', e.target.value)}
-                    step="0.01"
-                    min="0"
+                    placeholder="Ej: 50000000"
                   />
                 </>
               )}
@@ -760,18 +753,28 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                 value={formData.idioma}
                 onChange={(e) => handleInputChange('idioma', e.target.value)}
                 options={idiomaOptions}
-                required
               />
-              <FormField
-                label="Correo electrónico"
-                type="email"
-                value={formData.correo_electronico}
-                onChange={(e) => handleInputChange('correo_electronico', e.target.value)}
-                required
-                error={errors.correo_electronico}
-              />
+            </div>
+          </div>
+
+          {/* CARD 2: Información de Contacto */}
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Información de Contacto</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <FormField
+                  label="Correo Electrónico"
+                  type="email"
+                  value={formData.correo_electronico}
+                  onChange={(e) => handleInputChange('correo_electronico', e.target.value)}
+                  required
+                  error={errors.correo_electronico}
+                />
+              </div>
+
               <PhoneInput
-                label="Número de teléfono"
+                label="Número de Teléfono"
                 value={formData.numero_telefono}
                 onChange={(e) => handleInputChange('numero_telefono', e.target.value)}
                 countryCode={formData.codigo_pais_telefono}
@@ -779,127 +782,148 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                 required
                 error={errors.numero_telefono}
               />
-            </div>
-
-            <div className="mt-6">
-              <h4 className="text-md font-medium text-gray-900 mb-3">Preferencias de Marketing</h4>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.recibe_emails_marketing}
-                    onChange={(e) => handleInputChange('recibe_emails_marketing', e.target.checked)}
-                    className="mr-3 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">El cliente desea recibir correos electrónicos de marketing</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.recibe_sms_marketing}
-                    onChange={(e) => handleInputChange('recibe_sms_marketing', e.target.checked)}
-                    className="mr-3 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">El cliente aceptó recibir mensajes SMS de Marketing</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Información de Dirección</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                label="Dirección"
-                value={formData.direccion}
-                onChange={(e) => handleInputChange('direccion', e.target.value)}
-              />
-              <FormField
-                label="Apartamento, local, etc"
-                value={formData.apartamento_local}
-                onChange={(e) => handleInputChange('apartamento_local', e.target.value)}
-              />
-
-              {/* País de residencia */}
-              <SelectField
-                label="País de residencia"
-                value={formData.pais_residencia}
-                onChange={(e) => handleInputChange('pais_residencia', e.target.value)}
-                options={paises.map(p => ({ value: p.nombre, label: p.nombre }))}
-                placeholder={loadingGeo ? "Cargando países..." : "Seleccionar país"}
-                disabled={loadingGeo}
-              />
-
-              {/* Departamento/Estado */}
-              <div>
-                {departamentos.length > 0 ? (
-                  <SelectField
-                    label="Departamento, estado, etc"
-                    value={formData.departamento_estado}
-                    onChange={(e) => handleInputChange('departamento_estado', e.target.value)}
-                    options={departamentos.map(d => ({ value: d.nombre, label: d.nombre }))}
-                    placeholder={loadingGeo ? "Cargando departamentos..." : "Seleccionar departamento"}
-                    disabled={loadingGeo}
-                  />
-                ) : (
-                  <FormField
-                    label="Departamento, estado, etc"
-                    value={formData.departamento_estado}
-                    onChange={(e) => handleInputChange('departamento_estado', e.target.value)}
-                    placeholder={
-                      !formData.pais_residencia 
-                        ? "Primero seleccione un país" 
-                        : "Escriba el nombre del departamento"
-                    }
-                    disabled={!formData.pais_residencia}
-                  />
-                )}
-              </div>
-
-              {/* Ciudad */}
-              <div>
-                {ciudades.length > 0 ? (
-                  <SelectField
-                    label="Ciudad"
-                    value={formData.ciudad}
-                    onChange={(e) => handleInputChange('ciudad', e.target.value)}
-                    options={ciudades.map(c => ({ value: c.nombre, label: c.nombre }))}
-                    placeholder={loadingGeo ? "Cargando ciudades..." : "Seleccionar ciudad"}
-                    disabled={loadingGeo}
-                  />
-                ) : (
-                  <FormField
-                    label="Ciudad"
-                    value={formData.ciudad}
-                    onChange={(e) => handleInputChange('ciudad', e.target.value)}
-                    placeholder={
-                      !formData.departamento_estado 
-                        ? "Primero seleccione un departamento" 
-                        : "Escriba el nombre de la ciudad"
-                    }
-                    disabled={!formData.departamento_estado}
-                  />
-                )}
-              </div>
-
-              <FormField
-                label="Código postal"
-                value={formData.codigo_postal}
-                onChange={(e) => handleInputChange('codigo_postal', e.target.value)}
-              />
 
               <PhoneInput
-                label="Teléfono de la residencia"
+                label="Teléfono de Residencia"
                 value={formData.telefono_residencia}
                 onChange={(e) => handleInputChange('telefono_residencia', e.target.value)}
                 countryCode={formData.codigo_pais_residencia}
                 onCountryCodeChange={(e) => handleInputChange('codigo_pais_residencia', e.target.value)}
               />
             </div>
+
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.recibe_emails_marketing}
+                  onChange={(e) => handleInputChange('recibe_emails_marketing', e.target.checked)}
+                  className="mr-3 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
+                />
+                <span className="text-sm text-gray-700">Acepta recibir emails de marketing</span>
+              </label>
+
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.recibe_sms_marketing}
+                  onChange={(e) => handleInputChange('recibe_sms_marketing', e.target.checked)}
+                  className="mr-3 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
+                />
+                <span className="text-sm text-gray-700">Acepta recibir SMS de marketing</span>
+              </label>
+            </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Información Fiscal</h3>
+          {/* CARD 3: Dirección */}
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Dirección</h3>
+            
+            <div className="space-y-4">
+              <FormField
+                label="Dirección"
+                value={formData.direccion}
+                onChange={(e) => handleInputChange('direccion', e.target.value)}
+                placeholder="Ej: Calle 123 #45-67"
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  label="Apartamento/Local"
+                  value={formData.apartamento_local}
+                  onChange={(e) => handleInputChange('apartamento_local', e.target.value)}
+                  placeholder="Ej: Apto 301"
+                />
+
+                <FormField
+                  label="Código Postal"
+                  value={formData.codigo_postal}
+                  onChange={(e) => handleInputChange('codigo_postal', e.target.value)}
+                  placeholder="Ej: 110111"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <SelectField
+                  label="País de Residencia"
+                  value={formData.pais_residencia}
+                  onChange={(e) => handleInputChange('pais_residencia', e.target.value)}
+                  options={paises.map(p => ({ value: p.nombre, label: p.nombre }))}
+                  placeholder={loadingGeo ? "Cargando países..." : "Seleccionar país"}
+                  disabled={loadingGeo}
+                />
+
+                <SelectField
+                  label="Departamento/Estado"
+                  value={formData.departamento_estado}
+                  onChange={(e) => handleInputChange('departamento_estado', e.target.value)}
+                  options={departamentos.map(d => ({ value: d.nombre, label: d.nombre }))}
+                  placeholder={
+                    !formData.pais_residencia 
+                      ? "Primero seleccione un país" 
+                      : loadingGeo 
+                        ? "Cargando..." 
+                        : departamentos.length === 0 
+                          ? "No hay departamentos" 
+                          : "Seleccionar departamento"
+                  }
+                  disabled={!formData.pais_residencia || loadingGeo}
+                />
+
+                <SelectField
+                  label="Ciudad"
+                  value={formData.ciudad}
+                  onChange={(e) => handleInputChange('ciudad', e.target.value)}
+                  options={ciudades.map(c => ({ value: c.nombre, label: c.nombre }))}
+                  placeholder={
+                    !formData.departamento_estado 
+                      ? "Primero seleccione un departamento" 
+                      : loadingGeo 
+                        ? "Cargando..." 
+                        : ciudades.length === 0 
+                          ? "No hay ciudades" 
+                          : "Seleccionar ciudad"
+                  }
+                  disabled={!formData.departamento_estado || loadingGeo}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 4: Notas y Etiquetas */}
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Notas y Etiquetas</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Notas</label>
+                <TextArea
+                  value={formData.notas}
+                  onChange={(e) => handleInputChange('notas', e.target.value)}
+                  placeholder="Agrega notas sobre este cliente..."
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Etiquetas</label>
+                <TagInput
+                  value={formData.etiquetas}
+                  onChange={(newTags) => handleInputChange('etiquetas', newTags)}
+                  placeholder="Escribe una etiqueta y presiona Enter"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMNA DERECHA (1/3 en desktop) */}
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+          
+          {/* CARD: Impuestos */}
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Impuestos</h3>
+            
             <RadioGroup
               name="recaudar_impuestos"
               value={formData.recaudar_impuestos}
@@ -908,56 +932,53 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
               required
             />
           </div>
-        </div>
 
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <div className="flex items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Notas sobre el cliente</h3>
-              <svg className="w-4 h-4 text-gray-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
+          {/* BOTONES DE ACCIÓN - STICKY en desktop */}
+          <div className="lg:sticky lg:top-24 bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+            <div className="space-y-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    <span>Guardando...</span>
+                  </div>
+                ) : (
+                  <span>{isEdit ? 'Actualizar Cliente' : 'Crear Cliente'}</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.history.back()}
+                className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm sm:text-base"
+              >
+                Cancelar
+              </button>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Las notas sobre el cliente son privadas hasta para él, así que anote lo necesario sobre el mismo
-            </p>
-            <TextArea
-              value={formData.notas}
-              onChange={(e) => handleInputChange('notas', e.target.value)}
-              placeholder="Escribir notas aquí..."
-              rows={6}
-            />
-          </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Etiquetas del cliente</h3>
-            <TagInput
-              value={formData.etiquetas}
-              onChange={(value) => handleInputChange('etiquetas', value)}
-              placeholder="Agregar etiqueta..."
-            />
-            <p className="text-sm text-gray-600 mt-3">
-              En caso de que no se entienda, con etiquetas puede hacerle como labels al cliente, es decir, categorizarlo (ej: buena paga, activo, amable, etc.)
-            </p>
+            {/* Info adicional (solo desktop) */}
+            <div className="hidden lg:block mt-6 pt-6 border-t border-gray-200">
+              <div className="text-xs text-gray-500 space-y-2">
+                <p className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Los campos con * son obligatorios
+                </p>
+                <p className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Los datos están protegidos y encriptados
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={() => window.history.back()}
-          className="bg-gray-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-600 transition-colors"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-black text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? (isEdit ? 'Actualizando...' : 'Guardando...') : (isEdit ? 'Actualizar Cliente' : 'Guardar Cliente')}
-        </button>
       </div>
     </form>
   );
