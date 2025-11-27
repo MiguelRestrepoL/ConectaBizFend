@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -202,7 +203,7 @@ const AuditPage = () => {
                 {/* Fila 2: Filtros de fecha */}
                 <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 items-stretch sm:items-center">
                   <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-600 whitespace-nowrap">Desde:</label>
+                    <label className="text-sm text-gray-900 font-medium whitespace-nowrap">Desde:</label>
                     <input
                       type="date"
                       value={dateFrom}
@@ -215,7 +216,7 @@ const AuditPage = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-600 whitespace-nowrap">Hasta:</label>
+                    <label className="text-sm text-gray-900 font-medium whitespace-nowrap">Hasta:</label>
                     <input
                       type="date"
                       value={dateTo}

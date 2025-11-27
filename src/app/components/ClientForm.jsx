@@ -31,6 +31,52 @@ const actividadesEconomicas = {
   ]
 };
 
+// Ciudades predefinidas para Valle del Cauca
+const ciudadesValleCauca = [
+  'Cali',
+  'Palmira',
+  'Buenaventura',
+  'Tuluá',
+  'Cartago',
+  'Buga',
+  'Jamundí',
+  'Yumbo',
+  'Candelaria',
+  'Florida',
+  'Pradera',
+  'El Cerrito',
+  'Ginebra',
+  'Guacarí',
+  'Dagua',
+  'La Cumbre',
+  'Vijes',
+  'Yotoco',
+  'Zarzal',
+  'Roldanillo',
+  'Bolívar',
+  'Trujillo',
+  'Sevilla',
+  'Caicedonia',
+  'Andalucía',
+  'Bugalagrande',
+  'Calima',
+  'Darién',
+  'Restrepo',
+  'La Unión',
+  'Toro',
+  'Versalles',
+  'Ansermanuevo',
+  'Obando',
+  'Alcalá',
+  'Ulloa',
+  'La Victoria',
+  'Argelia',
+  'El Águila',
+  'El Cairo',
+  'El Dovio',
+  'San Pedro'
+].sort();
+
 // Función para calcular el dígito de verificación
 const calcularDigitoVerificacion = (nit) => {
   if (!nit || nit.length === 0) return '';
@@ -353,74 +399,87 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     cargarDepartamentos();
   }, [formData.pais_residencia, paises]);
 
+  // Nuevo useEffect para manejar las ciudades de Valle del Cauca
   useEffect(() => {
-    const cargarCiudades = async () => {
-      if (!formData.departamento_estado) {
+    if (!formData.departamento_estado) {
+      setCiudades([]);
+      return;
+    }
+
+    // Si el departamento es Valle del Cauca, usamos la lista predefinida
+    if (formData.departamento_estado === 'Valle del Cauca' || 
+        formData.departamento_estado === 'Valle del Cauca Department') {
+      const ciudadesFormateadas = ciudadesValleCauca.map(ciudad => ({
+        nombre: ciudad,
+        poblacion: 0,
+        geonameId: null
+      }));
+      setCiudades(ciudadesFormateadas);
+    } else {
+      // Para otros departamentos, intentamos cargar desde GeoNames
+      cargarCiudadesGeoNames();
+    }
+  }, [formData.departamento_estado, departamentos, formData.pais_residencia, paises]);
+
+  const cargarCiudadesGeoNames = async () => {
+    try {
+      setLoadingGeo(true);
+      const deptoSeleccionado = departamentos.find(d => d.nombre === formData.departamento_estado);
+
+      if (!deptoSeleccionado || !deptoSeleccionado.geonameId) {
+        console.log('No se encontró geonameId para el departamento seleccionado');
         setCiudades([]);
         return;
       }
 
-      try {
-        setLoadingGeo(true);
-        const deptoSeleccionado = departamentos.find(d => d.nombre === formData.departamento_estado);
+      console.log('Buscando ciudades para departamento:', deptoSeleccionado);
 
-        if (!deptoSeleccionado || !deptoSeleccionado.geonameId) {
-          console.log('No se encontró geonameId para el departamento seleccionado');
-          setCiudades([]);
-          return;
-        }
+      let response = await fetch(
+        `https://secure.geonames.org/childrenJSON?geonameId=${deptoSeleccionado.geonameId}&username=keivch1304`
+      );
+      let data = await response.json();
 
-        console.log('Buscando ciudades para departamento:', deptoSeleccionado);
+      let ciudadesEncontradas = [];
 
-        let response = await fetch(
-          `https://secure.geonames.org/childrenJSON?geonameId=${deptoSeleccionado.geonameId}&username=keivch1304`
+      if (!data.geonames || data.geonames.length === 0) {
+        console.log('Intentando búsqueda alternativa de ciudades...');
+        response = await fetch(
+          `https://secure.geonames.org/searchJSON?adminCode1=${deptoSeleccionado.adminName || deptoSeleccionado.nombre}&country=${paises.find(p => p.nombre === formData.pais_residencia)?.codigo}&featureClass=P&maxRows=100&username=keivch1304`
         );
-        let data = await response.json();
-
-        let ciudadesEncontradas = [];
-
-        if (!data.geonames || data.geonames.length === 0) {
-          console.log('Intentando búsqueda alternativa de ciudades...');
-          response = await fetch(
-            `https://secure.geonames.org/searchJSON?adminCode1=${deptoSeleccionado.adminName || deptoSeleccionado.nombre}&country=${paises.find(p => p.nombre === formData.pais_residencia)?.codigo}&featureClass=P&maxRows=100&username=keivch1304`
-          );
-          data = await response.json();
-        }
-
-        if (data.geonames && data.geonames.length > 0) {
-          ciudadesEncontradas = data.geonames
-            .filter(lugar => 
-              lugar.fcl === 'P' || 
-              lugar.fcode === 'PPL' || 
-              lugar.fcode === 'PPLA' || 
-              lugar.fcode === 'PPLC' || 
-              lugar.fcode === 'PPLA2' ||
-              lugar.fcode === 'PPLA3' ||
-              lugar.fcode === 'PPLA4'
-            )
-            .map(ciudad => ({
-              nombre: ciudad.name,
-              poblacion: ciudad.population || 0,
-              geonameId: ciudad.geonameId
-            }))
-            .sort((a, b) => b.poblacion - a.poblacion || a.nombre.localeCompare(b.nombre));
-
-          console.log(`Se encontraron ${ciudadesEncontradas.length} ciudades`);
-          setCiudades(ciudadesEncontradas);
-        } else {
-          console.log('No se encontraron ciudades');
-          setCiudades([]);
-        }
-      } catch (error) {
-        console.log('Error cargando ciudades:', error);
-        setCiudades([]);
-      } finally {
-        setLoadingGeo(false);
+        data = await response.json();
       }
-    };
 
-    cargarCiudades();
-  }, [formData.departamento_estado, departamentos, formData.pais_residencia, paises]);
+      if (data.geonames && data.geonames.length > 0) {
+        ciudadesEncontradas = data.geonames
+          .filter(lugar => 
+            lugar.fcl === 'P' || 
+            lugar.fcode === 'PPL' || 
+            lugar.fcode === 'PPLA' || 
+            lugar.fcode === 'PPLC' || 
+            lugar.fcode === 'PPLA2' ||
+            lugar.fcode === 'PPLA3' ||
+            lugar.fcode === 'PPLA4'
+          )
+          .map(ciudad => ({
+            nombre: ciudad.name,
+            poblacion: ciudad.population || 0,
+            geonameId: ciudad.geonameId
+          }))
+          .sort((a, b) => b.poblacion - a.poblacion || a.nombre.localeCompare(b.nombre));
+
+        console.log(`Se encontraron ${ciudadesEncontradas.length} ciudades`);
+        setCiudades(ciudadesEncontradas);
+      } else {
+        console.log('No se encontraron ciudades');
+        setCiudades([]);
+      }
+    } catch (error) {
+      console.log('Error cargando ciudades:', error);
+      setCiudades([]);
+    } finally {
+      setLoadingGeo(false);
+    }
+  };
 
   useEffect(() => {
     if (formData.nit && formData.tipo_cliente === 'persona_juridica') {
@@ -449,7 +508,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     }
   }, [formData.actividad_economica]);
 
-    const handleInputChange = (field, value) => {
+  const handleInputChange = (field, value) => {
     const processedValue = (value === null || value === undefined) ? '' : value;
 
     setFormData(prev => ({
@@ -588,8 +647,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     { value: 'recaudar_con_excepcion', label: 'Realizar recaudación de impuestos a menos que haya excepción' },
     { value: 'no_recaudar', label: 'No recaudar impuestos' }
   ];
-
-  return (
+   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       {/* BADGE DE ESTADO (solo en edit) */}
       {isEdit && (
@@ -878,13 +936,11 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
                   placeholder={
                     !formData.departamento_estado 
                       ? "Primero seleccione un departamento" 
-                      : loadingGeo 
-                        ? "Cargando..." 
-                        : ciudades.length === 0 
-                          ? "No hay ciudades" 
-                          : "Seleccionar ciudad"
+                      : ciudades.length === 0 
+                        ? "No hay ciudades disponibles" 
+                        : "Seleccionar ciudad"
                   }
-                  disabled={!formData.departamento_estado || loadingGeo}
+                  disabled={!formData.departamento_estado}
                 />
               </div>
             </div>
