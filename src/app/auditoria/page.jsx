@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -155,7 +154,7 @@ const AuditPage = () => {
         <main className="p-4 md:p-8 pt-20 md:pt-24">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col gap-4 mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Auditoría</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-black">Auditoría</h1>
 
               {/* Filtros responsive */}
               <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 flex-wrap">
@@ -167,7 +166,7 @@ const AuditPage = () => {
                       setEntityType(e.target.value);
                       setPage(1);
                     }}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
                     <option value="all">Todos los tipos</option>
                     <option value="client">Cliente</option>
@@ -180,7 +179,7 @@ const AuditPage = () => {
                       setAction(e.target.value);
                       setPage(1);
                     }}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
                     <option value="all">Todas las acciones</option>
                     <option value="create">Creación</option>
@@ -192,7 +191,7 @@ const AuditPage = () => {
                       setPage(1);
                       setLimit(parseInt(e.target.value, 10));
                     }}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
                     <option value={10}>10 por página</option>
                     <option value={20}>20 por página</option>
@@ -203,7 +202,7 @@ const AuditPage = () => {
                 {/* Fila 2: Filtros de fecha */}
                 <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 items-stretch sm:items-center">
                   <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-900 font-medium whitespace-nowrap">Desde:</label>
+                    <label className="text-sm text-black font-medium whitespace-nowrap">Desde:</label>
                     <input
                       type="date"
                       value={dateFrom}
@@ -211,12 +210,12 @@ const AuditPage = () => {
                         setDateFrom(e.target.value);
                         setPage(1);
                       }}
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-900 font-medium whitespace-nowrap">Hasta:</label>
+                    <label className="text-sm text-black font-medium whitespace-nowrap">Hasta:</label>
                     <input
                       type="date"
                       value={dateTo}
@@ -224,14 +223,14 @@ const AuditPage = () => {
                         setDateTo(e.target.value);
                         setPage(1);
                       }}
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     />
                   </div>
 
                   {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
-                      className="px-3 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors whitespace-nowrap"
+                      className="px-3 py-2 text-sm text-black bg-gray-100 hover:bg-gray-200 rounded-md transition-colors whitespace-nowrap font-medium"
                     >
                       Limpiar filtros
                     </button>
@@ -251,18 +250,18 @@ const AuditPage = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entidad</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metadata</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Fecha</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Usuario</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Tipo</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Entidad</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Acción</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black uppercase tracking-wider">Metadata</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-gray-500 text-sm">
+                      <td colSpan={6} className="px-4 py-8 text-center text-black text-sm">
                         <div className="flex items-center justify-center gap-2">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                           <span>Cargando...</span>
@@ -271,33 +270,33 @@ const AuditPage = () => {
                     </tr>
                   ) : audits.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-gray-500 text-sm">
+                      <td colSpan={6} className="px-4 py-8 text-center text-black text-sm">
                         {hasActiveFilters ? 'No se encontraron registros con los filtros aplicados' : 'Sin registros'}
                       </td>
                     </tr>
                   ) : (
                     audits.map((a) => (
                       <tr key={`${a.id}-${a.created_at}`} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{formatDateTime(a.created_at)}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                        <td className="px-4 py-3 text-sm text-black whitespace-nowrap">{formatDateTime(a.created_at)}</td>
+                        <td className="px-4 py-3 text-sm text-black whitespace-nowrap">
                           <span className="font-medium">{getUsernameFromAudit(a)}</span>
                         </td>
                         <td className="px-4 py-3 text-sm whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
                             {a.entity_type === 'client' ? 'Cliente' : a.entity_type === 'pedido' ? 'Pedido' : a.entity_type}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">#{a.entity_id}</td>
+                        <td className="px-4 py-3 text-sm text-black whitespace-nowrap">#{a.entity_id}</td>
                         <td className="px-4 py-3 text-sm whitespace-nowrap">
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
                             {a.action === 'create' ? 'Creación' : a.action}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
+                        <td className="px-4 py-3 text-sm text-black">
                           {a.metadata ? (
                             <details>
-                              <summary className="cursor-pointer text-blue-600 hover:underline">Ver JSON</summary>
-                              <pre className="mt-2 bg-gray-50 p-3 rounded text-xs overflow-auto max-h-48">
+                              <summary className="cursor-pointer text-blue-600 hover:underline font-medium">Ver JSON</summary>
+                              <pre className="mt-2 bg-gray-50 p-3 rounded text-xs overflow-auto max-h-48 text-black">
                                 {JSON.stringify(a.metadata, null, 2)}
                               </pre>
                             </details>
@@ -315,14 +314,14 @@ const AuditPage = () => {
             {/* Vista de tarjetas para móvil y tablet */}
             <div className="lg:hidden space-y-4">
               {loading ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-black">
                   <div className="flex items-center justify-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
                     <span>Cargando...</span>
                   </div>
                 </div>
               ) : audits.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-black">
                   {hasActiveFilters ? 'No se encontraron registros con los filtros aplicados' : 'Sin registros'}
                 </div>
               ) : (
@@ -331,41 +330,41 @@ const AuditPage = () => {
                     <div className="flex flex-col space-y-3">
                       <div className="flex justify-between items-start gap-2">
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Fecha</p>
-                          <p className="text-sm text-gray-900">{formatDateTime(a.created_at)}</p>
+                          <p className="text-xs text-black font-bold uppercase tracking-wide mb-1">Fecha</p>
+                          <p className="text-sm text-black">{formatDateTime(a.created_at)}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Usuario</p>
-                          <p className="text-sm font-medium text-gray-900">{getUsernameFromAudit(a)}</p>
+                          <p className="text-xs text-black font-bold uppercase tracking-wide mb-1">Usuario</p>
+                          <p className="text-sm font-medium text-black">{getUsernameFromAudit(a)}</p>
                         </div>
                       </div>
 
                       <div className="flex gap-4">
                         <div className="flex-1">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Tipo</p>
-                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                          <p className="text-xs text-black font-bold uppercase tracking-wide mb-1">Tipo</p>
+                          <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
                             {a.entity_type === 'client' ? 'Cliente' : a.entity_type === 'pedido' ? 'Pedido' : a.entity_type}
                           </span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Entidad</p>
-                          <p className="text-sm text-gray-700">#{a.entity_id}</p>
+                          <p className="text-xs text-black font-bold uppercase tracking-wide mb-1">Entidad</p>
+                          <p className="text-sm text-black">#{a.entity_id}</p>
                         </div>
                       </div>
 
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Acción</p>
+                        <p className="text-xs text-black font-bold uppercase tracking-wide mb-1">Acción</p>
                         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
                           {a.action === 'create' ? 'Creación' : a.action}
                         </span>
                       </div>
 
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Metadata</p>
+                        <p className="text-xs text-black font-bold uppercase tracking-wide mb-2">Metadata</p>
                         {a.metadata ? (
                           <details className="cursor-pointer">
-                            <summary className="text-blue-600 hover:underline text-sm">Ver JSON</summary>
-                            <pre className="mt-2 bg-gray-50 p-3 rounded text-xs overflow-auto max-h-48">
+                            <summary className="text-blue-600 hover:underline text-sm font-medium">Ver JSON</summary>
+                            <pre className="mt-2 bg-gray-50 p-3 rounded text-xs overflow-auto max-h-48 text-black">
                               {JSON.stringify(a.metadata, null, 2)}
                             </pre>
                           </details>
@@ -384,26 +383,26 @@ const AuditPage = () => {
               <button
                 onClick={goPrev}
                 disabled={loading || page === 1}
-                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm transition-colors ${
+                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm font-medium transition-colors ${
                   page === 1 || loading 
                     ? 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed' 
-                    : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                    : 'text-black border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 Anterior
               </button>
 
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-black font-medium">
                 Página {page} {audits.length > 0 && `• ${audits.length} registros`}
               </span>
 
               <button
                 onClick={goNext}
                 disabled={loading || !hasMore}
-                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm transition-colors ${
+                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm font-medium transition-colors ${
                   !hasMore || loading 
                     ? 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed' 
-                    : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                    : 'text-black border-gray-300 hover:bg-gray-50'
                 }`}
               >
                 Siguiente
