@@ -14,19 +14,22 @@ const AuditPage = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_LIMIT);
   const [hasMore, setHasMore] = useState(false);
+  const [usersCache, setUsersCache] = useState({});
+  
+  // Filtros
   const [entityType, setEntityType] = useState('all');
   const [action, setAction] = useState('all');
-  const [usersCache, setUsersCache] = useState({});
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const offset = useMemo(() => (page - 1) * limit, [page, limit]);
 
   useEffect(() => {
     loadAudits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit]);
+  }, [page, limit, entityType, action, dateFrom, dateTo]);
 
   const fetchUserInfo = async (userId) => {
-    // Si ya tenemos el usuario en caché, no hacer la petición
     if (usersCache[userId]) {
       return usersCache[userId];
     }
@@ -35,7 +38,6 @@ const AuditPage = () => {
       const response = await api.get(`/auth/${userId}`);
       const userData = response.data.user;
       
-      // Guardar en caché
       setUsersCache(prev => ({
         ...prev,
         [userId]: userData
@@ -44,7 +46,6 @@ const AuditPage = () => {
       return userData;
     } catch (err) {
       console.error(`Error al obtener usuario ${userId}:`, err);
-      // Retornar datos por defecto si falla
       return {
         id: userId,
         username: 'Usuario desconocido',
@@ -63,7 +64,22 @@ const AuditPage = () => {
         offset: String(offset)
       });
 
-      const response = await api.get(`/audits?${params.toString()}`);
+      // Si hay filtros activos, usar el endpoint /search
+      const hasFilters = entityType !== 'all' || action !== 'all' || dateFrom || dateTo;
+      
+      if (hasFilters) {
+        if (entityType !== 'all') params.append('entity_type', entityType);
+        if (action !== 'all') params.append('action', action);
+        if (dateFrom) params.append('from', new Date(dateFrom).toISOString());
+        if (dateTo) {
+          const endDate = new Date(dateTo);
+          endDate.setHours(23, 59, 59, 999);
+          params.append('to', endDate.toISOString());
+        }
+      }
+
+      const endpoint = hasFilters ? `/audits/search?${params.toString()}` : `/audits?${params.toString()}`;
+      const response = await api.get(endpoint);
       
       const data = response.data;
       const list = data.audits || [];
@@ -85,13 +101,15 @@ const AuditPage = () => {
     }
   };
 
-  const filteredAudits = useMemo(() => {
-    return audits.filter((a) => {
-      const matchEntity = entityType === 'all' || a.entity_type === entityType;
-      const matchAction = action === 'all' || a.action === action;
-      return matchEntity && matchAction;
-    });
-  }, [audits, entityType, action]);
+  const clearFilters = () => {
+    setEntityType('all');
+    setAction('all');
+    setDateFrom('');
+    setDateTo('');
+    setPage(1);
+  };
+
+  const hasActiveFilters = entityType !== 'all' || action !== 'all' || dateFrom || dateTo;
 
   const goPrev = () => {
     if (page > 1) setPage((p) => p - 1);
@@ -110,12 +128,10 @@ const AuditPage = () => {
   };
 
   const getUsernameFromAudit = (audit) => {
-    // Primero buscar en caché de usuarios
     if (audit.user_id && usersCache[audit.user_id]) {
       return usersCache[audit.user_id].username;
     }
     
-    // Luego buscar en metadata por si viene del backend
     if (audit.metadata?.username) {
       return audit.metadata.username;
     }
@@ -137,42 +153,89 @@ const AuditPage = () => {
 
         <main className="p-4 md:p-8 pt-20 md:pt-24">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex flex-col gap-4 mb-6">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Auditoría</h1>
 
               {/* Filtros responsive */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                <select
-                  value={entityType}
-                  onChange={(e) => setEntityType(e.target.value)}
-                  className="border rounded-md px-3 py-2 text-sm w-full sm:w-auto"
-                >
-                  <option value="all">Todos los tipos</option>
-                  <option value="client">Cliente</option>
-                  <option value="pedido">Pedido</option>
-                </select>
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2 lg:gap-3 flex-wrap">
+                {/* Fila 1: Filtros principales */}
+                <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 flex-1">
+                  <select
+                    value={entityType}
+                    onChange={(e) => {
+                      setEntityType(e.target.value);
+                      setPage(1);
+                    }}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">Todos los tipos</option>
+                    <option value="client">Cliente</option>
+                    <option value="pedido">Pedido</option>
+                  </select>
 
-                <select
-                  value={action}
-                  onChange={(e) => setAction(e.target.value)}
-                  className="border rounded-md px-3 py-2 text-sm w-full sm:w-auto"
-                >
-                  <option value="all">Todas las acciones</option>
-                  <option value="create">Creación</option>
-                </select>
+                  <select
+                    value={action}
+                    onChange={(e) => {
+                      setAction(e.target.value);
+                      setPage(1);
+                    }}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">Todas las acciones</option>
+                    <option value="create">Creación</option>
+                  </select>
 
-                <select
-                  value={limit}
-                  onChange={(e) => {
-                    setPage(1);
-                    setLimit(parseInt(e.target.value, 10));
-                  }}
-                  className="border rounded-md px-3 py-2 text-sm w-full sm:w-auto"
-                >
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
+                  <select
+                    value={limit}
+                    onChange={(e) => {
+                      setPage(1);
+                      setLimit(parseInt(e.target.value, 10));
+                    }}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value={10}>10 por página</option>
+                    <option value={20}>20 por página</option>
+                    <option value={50}>50 por página</option>
+                  </select>
+                </div>
+
+                {/* Fila 2: Filtros de fecha */}
+                <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 items-stretch sm:items-center">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600 whitespace-nowrap">Desde:</label>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => {
+                        setDateFrom(e.target.value);
+                        setPage(1);
+                      }}
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm text-gray-600 whitespace-nowrap">Hasta:</label>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => {
+                        setDateTo(e.target.value);
+                        setPage(1);
+                      }}
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="px-3 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors whitespace-nowrap"
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -183,7 +246,7 @@ const AuditPage = () => {
             )}
 
             {/* Vista de tabla para desktop */}
-            <div className="hidden lg:block overflow-x-auto border rounded-lg">
+            <div className="hidden lg:block overflow-x-auto border rounded-lg shadow-sm">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -198,15 +261,22 @@ const AuditPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center text-gray-500 text-sm">Cargando...</td>
+                      <td colSpan={6} className="px-4 py-8 text-center text-gray-500 text-sm">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                          <span>Cargando...</span>
+                        </div>
+                      </td>
                     </tr>
-                  ) : filteredAudits.length === 0 ? (
+                  ) : audits.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center text-gray-500 text-sm">Sin registros</td>
+                      <td colSpan={6} className="px-4 py-8 text-center text-gray-500 text-sm">
+                        {hasActiveFilters ? 'No se encontraron registros con los filtros aplicados' : 'Sin registros'}
+                      </td>
                     </tr>
                   ) : (
-                    filteredAudits.map((a) => (
-                      <tr key={`${a.id}-${a.created_at}`} className="hover:bg-gray-50">
+                    audits.map((a) => (
+                      <tr key={`${a.id}-${a.created_at}`} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{formatDateTime(a.created_at)}</td>
                         <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
                           <span className="font-medium">{getUsernameFromAudit(a)}</span>
@@ -244,14 +314,20 @@ const AuditPage = () => {
             {/* Vista de tarjetas para móvil y tablet */}
             <div className="lg:hidden space-y-4">
               {loading ? (
-                <div className="text-center py-8 text-gray-500">Cargando...</div>
-              ) : filteredAudits.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Sin registros</div>
+                <div className="text-center py-8 text-gray-500">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                    <span>Cargando...</span>
+                  </div>
+                </div>
+              ) : audits.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  {hasActiveFilters ? 'No se encontraron registros con los filtros aplicados' : 'Sin registros'}
+                </div>
               ) : (
-                filteredAudits.map((a) => (
+                audits.map((a) => (
                   <div key={`${a.id}-${a.created_at}`} className="border rounded-lg p-4 bg-white shadow-sm">
                     <div className="flex flex-col space-y-3">
-                      {/* Fecha y Usuario */}
                       <div className="flex justify-between items-start gap-2">
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Fecha</p>
@@ -263,7 +339,6 @@ const AuditPage = () => {
                         </div>
                       </div>
 
-                      {/* Tipo y Entidad */}
                       <div className="flex gap-4">
                         <div className="flex-1">
                           <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Tipo</p>
@@ -277,7 +352,6 @@ const AuditPage = () => {
                         </div>
                       </div>
 
-                      {/* Acción */}
                       <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Acción</p>
                         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -285,7 +359,6 @@ const AuditPage = () => {
                         </span>
                       </div>
 
-                      {/* Metadata */}
                       <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Metadata</p>
                         {a.metadata ? (
@@ -310,7 +383,7 @@ const AuditPage = () => {
               <button
                 onClick={goPrev}
                 disabled={loading || page === 1}
-                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm ${
+                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm transition-colors ${
                   page === 1 || loading 
                     ? 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed' 
                     : 'text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -319,12 +392,14 @@ const AuditPage = () => {
                 Anterior
               </button>
 
-              <span className="text-sm text-gray-600">Página {page}</span>
+              <span className="text-sm text-gray-600">
+                Página {page} {audits.length > 0 && `• ${audits.length} registros`}
+              </span>
 
               <button
                 onClick={goNext}
                 disabled={loading || !hasMore}
-                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm ${
+                className={`w-full sm:w-auto px-4 py-2 rounded border text-sm transition-colors ${
                   !hasMore || loading 
                     ? 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed' 
                     : 'text-gray-700 border-gray-300 hover:bg-gray-50'
