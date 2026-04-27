@@ -989,7 +989,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
             />
           </div>
 
-          {/* BOTONES DE ACCIÓN - STICKY en desktop */}
+          {/* BOTONES DE ACCIÓN - STICKY en desktop xd */}
           <div className="lg:sticky lg:top-24 bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-lg">
             <div className="space-y-3">
               <button
