@@ -390,8 +390,8 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Nuevo cliente',  icon: '👤', href: '/agregar-cliente' },
-              { label: 'Nuevo pedido',   icon: '📋', href: '/agregar-pedido' },
-              { label: 'Nuevo producto', icon: '📦', href: '/agregar-producto' },
+              { label: 'Nuevo pedido',   icon: '📋', href: '/crear-pedido' },
+              { label: 'Nuevo producto', icon: '📦', href: '/crear-producto' },
               { label: 'Auditoría',      icon: '🔍', href: '/auditoria' },
             ].map((item) => (
               <button
