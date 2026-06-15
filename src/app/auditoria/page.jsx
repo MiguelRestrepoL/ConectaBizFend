@@ -311,7 +311,7 @@ const AuditPage = () => {
               </table>
             </div>
 
-            {/* Vista de tarjetas para móvil y tablet */}
+            {/* Vista de tarjetas para móvil y tablet xd*/}
             <div className="lg:hidden space-y-4">
               {loading ? (
                 <div className="text-center py-8 text-black">
