@@ -13,7 +13,7 @@ export default function Pedidos() {
   };
 
   return (
-    <Layout>
+    <Layout activeItem="pedidos">
       {/* HEADER DE LA PÁGINA */}
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

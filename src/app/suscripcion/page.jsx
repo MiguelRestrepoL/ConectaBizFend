@@ -64,7 +64,7 @@ export default function Home() {
   };
 
   return (
-    <Layout activeItem="inicio" userName="Usuario">
+    <Layout activeItem="suscripcion" userName="Usuario">
       {/* Solo el contenido específico de la página */}
       <div className="max-w-7xl mx-auto">
         {/* Page Title - RESPONSIVE */}

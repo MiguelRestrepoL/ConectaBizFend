@@ -8,7 +8,7 @@ export default function Productos() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
-    <Layout>
+    <Layout activeItem="productos">
       {/* HEADER DE LA PÁGINA */}
       <div className="mb-6 sm:mb-8">
         <div className="flex items-center gap-3 sm:gap-4">

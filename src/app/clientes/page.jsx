@@ -20,7 +20,7 @@ export default function Clientes() {
   };
 
   return (
-    <Layout>
+    <Layout activeItem="clientes">
       {/* HEADER DE LA PÁGINA */}
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
