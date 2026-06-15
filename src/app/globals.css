@@ -47,3 +47,7 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-gray-500);
 }
+
+input, textarea, select {
+  color: #111827;
+}
