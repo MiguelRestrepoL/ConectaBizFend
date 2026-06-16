@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import InputField from '../components/InputField';
-import Button from '../components/Button';
 import SocialButton from '../components/SocialButton';
 import { authService } from '../api/auth';
  
@@ -15,20 +14,20 @@ const LoginPage = () => {
   const [mounted, setMounted] = useState(false);
  
   const canvasRef = useRef(null);
-  const particlesRef = useRef([]);
+  const pointsRef = useRef([]);
   const animFrameRef = useRef(null);
  
-  // ─── Fade-in al montar ──────────────────────────────────────────────────
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 50);
     return () => clearTimeout(t);
   }, []);
  
-  // ─── Partículas de fondo (mismo estilo que la landing) ─────────────────
+  // ─── Fondo: malla de puntos conectados + ondas aurora ───────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    let t = 0;
  
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -37,33 +36,74 @@ const LoginPage = () => {
     resize();
     window.addEventListener('resize', resize);
  
-    particlesRef.current = Array.from({ length: 16 }, () => ({
+    const COUNT = 38;
+    pointsRef.current = Array.from({ length: COUNT }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 100 + 40,
-      vx: (Math.random() - 0.5) * 0.25,
-      vy: -Math.random() * 0.35 - 0.08,
-      alpha: Math.random() * 0.07 + 0.02,
+      vx: (Math.random() - 0.5) * 0.22,
+      vy: (Math.random() - 0.5) * 0.22,
     }));
  
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particlesRef.current.forEach((p) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(124, 77, 255, ${p.alpha})`;
-        ctx.fill();
+      const { width, height } = canvas;
+      ctx.clearRect(0, 0, width, height);
  
+      // Ondas aurora suaves, tonos azul-morado
+      t += 0.0035;
+      const waveColors = [
+        'rgba(76, 110, 245, 0.05)',
+        'rgba(124, 77, 255, 0.045)',
+      ];
+      waveColors.forEach((color, i) => {
+        ctx.beginPath();
+        const yBase = height * (0.3 + i * 0.35);
+        ctx.moveTo(0, yBase);
+        for (let x = 0; x <= width; x += 20) {
+          const y = yBase
+            + Math.sin(x * 0.004 + t * (1 + i * 0.4) + i * 2) * 36
+            + Math.sin(x * 0.011 + t * 1.6) * 14;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      });
+ 
+      // Malla de puntos conectados
+      const pts = pointsRef.current;
+      pts.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
- 
-        if (p.y + p.r < 0) {
-          p.y = canvas.height + p.r;
-          p.x = Math.random() * canvas.width;
-        }
-        if (p.x + p.r < 0) p.x = canvas.width + p.r;
-        if (p.x - p.r > canvas.width) p.x = -p.r;
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
       });
+ 
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x;
+          const dy = pts[i].y - pts[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            const alpha = (1 - dist / 130) * 0.12;
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(140, 130, 255, ${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+ 
+      pts.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(170, 160, 255, 0.35)';
+        ctx.fill();
+      });
+ 
       animFrameRef.current = requestAnimationFrame(draw);
     };
     draw();
@@ -138,7 +178,7 @@ const LoginPage = () => {
       style={{
         position: 'relative',
         minHeight: '100vh',
-        background: '#0a0a0f',
+        background: 'radial-gradient(ellipse at 15% 20%, rgba(45,55,95,0.55) 0%, transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(60,40,110,0.45) 0%, transparent 55%), #0a0a0f',
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
@@ -150,6 +190,13 @@ const LoginPage = () => {
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cardGlow {
+          0%, 100% { box-shadow: 0 0 0 1px rgba(124,77,255,0.16), 0 20px 60px rgba(0,0,0,0.45), 0 0 40px rgba(90,80,220,0.08); }
+          50%      { box-shadow: 0 0 0 1px rgba(124,77,255,0.32), 0 20px 60px rgba(0,0,0,0.45), 0 0 60px rgba(90,80,220,0.16); }
+        }
+        .login-card {
+          animation: cardGlow 4.5s ease-in-out infinite;
         }
         .login-glow-btn {
           transition: box-shadow 0.25s ease, transform 0.15s ease, background 0.2s ease;
@@ -163,45 +210,21 @@ const LoginPage = () => {
         }
       `}</style>
  
-      {/* Manchas de luz ambiental, igual estilo que la landing */}
-      <div style={{
-        position: 'absolute', width: '500px', height: '500px', borderRadius: '50%',
-        background: 'rgba(100, 50, 220, 0.07)', top: '20%', left: '10%',
-        filter: 'blur(90px)', pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', width: '380px', height: '380px', borderRadius: '50%',
-        background: 'rgba(80, 30, 200, 0.06)', bottom: '10%', right: '12%',
-        filter: 'blur(70px)', pointerEvents: 'none',
-      }} />
- 
-      {/* Canvas de partículas */}
+      {/* Canvas: malla de puntos + aurora */}
       <canvas
         ref={canvasRef}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
       />
  
-      {/* Título esquina superior izquierda */}
-      <div style={{
-        position: 'absolute', top: '24px', left: '24px', zIndex: 5,
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0)' : 'translateY(-8px)',
-        transition: 'opacity 0.5s ease, transform 0.5s ease',
-      }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 500, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.02em' }}>
-          Inicio de Sesión
-        </h1>
-      </div>
- 
       {/* Formulario central */}
       <div style={{ position: 'relative', zIndex: 5, width: '100%', maxWidth: '420px' }}>
         <div
+          className="login-card"
           style={{
-            background: 'rgba(26, 26, 36, 0.9)',
-            border: '0.5px solid rgba(124,77,255,0.18)',
+            background: 'rgba(22, 24, 38, 0.88)',
+            border: '0.5px solid rgba(124,77,255,0.2)',
             borderRadius: '20px',
             padding: '32px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
             opacity: mounted ? 1 : 0,
             transform: mounted ? 'translateY(0) scale(1)' : 'translateY(18px) scale(0.98)',
             transition: 'opacity 0.5s ease, transform 0.5s ease',
@@ -359,3 +382,4 @@ const LoginPage = () => {
 };
  
 export default LoginPage;
+ 
