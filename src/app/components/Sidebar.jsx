@@ -1,14 +1,14 @@
 'use client';
-
+ 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { authService } from '../api/auth';
 import ConfirmModal from './ConfirmModal';
-
+ 
 const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
-
+ 
   const navigationItems = [
     { 
       id: 'inicio', 
@@ -111,14 +111,14 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
       href: '/auditoria' 
     },
     { 
-      id: 'descuentos', 
-      label: 'Descuentos', 
+      id: 'proveedores', 
+      label: 'Proveedores', 
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ), 
-      href: '/descuentos' 
+      href: '/proveedores' 
     },
     { 
       id: 'suscripcion', 
@@ -141,7 +141,7 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
       href: '/perfil' 
     }
   ];
-
+ 
   const salesChannels = [
     { 
       id: 'punto-fisico', 
@@ -164,7 +164,7 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
       href: '/tienda-online' 
     }
   ];
-
+ 
   const handleLogout = async () => {
     try {
       await authService.logout();
@@ -172,14 +172,14 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
       console.error('Error al cerrar sesión:', error);
     }
   };
-
+ 
   const handleLinkClick = () => {
     // Cerrar sidebar en móvil cuando se hace click en un link
     if (onClose) {
       onClose();
     }
   };
-
+ 
   return (
     <aside className={`
       fixed left-0 top-0 
@@ -213,7 +213,7 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
             </svg>
           </button>
         </div>
-
+ 
         {/* Navigation Items */}
         <nav className="space-y-2 mb-8">
           {navigationItems.map((item) => (
@@ -232,7 +232,7 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
             </Link>
           ))}
         </nav>
-
+ 
         {/* Sales Channels Section */}
         <div className="mb-8">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 px-4">
@@ -252,7 +252,7 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
             ))}
           </div>
         </div>
-
+ 
         {/* Logout Button */}
         <div className="border-t border-gray-700 pt-4">
           <button
@@ -269,6 +269,6 @@ const Sidebar = ({ activeItem = 'inicio', isOpen = false, onClose }) => {
     </aside>
   );
 };
-
-
+ 
+ 
 export default Sidebar;
