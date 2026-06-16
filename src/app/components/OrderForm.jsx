@@ -1,14 +1,14 @@
 'use client';
-
+ 
 import React, { useState, useEffect } from 'react';
 import FormField from './FormField';
 import SelectField from './SelectField';
 import { getClients } from '../api/clients';
 import { getProducts } from '../api/products';
-
+ 
 // Definir la tasa de IVA (19% en Colombia)
 const IVA_RATE = 0.19;
-
+ 
 const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = false }) => {
   const [formData, setFormData] = useState(initialData || {
     titulo: '',
@@ -19,7 +19,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
     monto_total_pagado: '',
     monto_recibido_sin_iva: ''
   });
-
+ 
   const [errors, setErrors] = useState({});
   const [clients, setClients] = useState([]);
   const [loadingClients, setLoadingClients] = useState(true);
@@ -27,7 +27,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
   const [productos, setProductos] = useState([]);
   const [loadingProductos, setLoadingProductos] = useState(true);
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
-
+ 
   useEffect(() => {
     if (initialData && initialData.productos) {
       const productosExistentes = initialData.productos.map(p => ({
@@ -40,7 +40,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
       setProductosSeleccionados(productosExistentes);
     }
   }, [initialData]);
-
+ 
   useEffect(() => {
     const total = parseFloat(formData.monto_total_pagado);
     if (!isNaN(total) && total > 0) {
@@ -56,17 +56,17 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
       }));
     }
   }, [formData.monto_total_pagado]);
-
+ 
   useEffect(() => {
     calcularTotalesDesdeProductos();
   }, [productosSeleccionados]);
-
+ 
   useEffect(() => {
     const loadClients = async () => {
       try {
         setLoadingClients(true);
         const result = await getClients({ limit: 1000 });
-
+ 
         if (result.success) {
           const clientsData = result.data.clients || result.data.data || result.data;
           setClients(clientsData);
@@ -77,16 +77,16 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
         setLoadingClients(false);
       }
     };
-
+ 
     loadClients();
   }, []);
-
+ 
   useEffect(() => {
     const loadProductos = async () => {
       try {
         setLoadingProductos(true);
         const result = await getProducts({ limit: 1000 });
-
+ 
         if (result.success) {
           const productosData = result.data.productos || result.data.data || result.data;
           setProductos(productosData);
@@ -97,22 +97,22 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
         setLoadingProductos(false);
       }
     };
-
+ 
     loadProductos();
   }, []);
-
+ 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
     }
   }, [initialData]);
-
+ 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-
+ 
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -120,7 +120,7 @@ const OrderForm = ({ onSubmit, loading = false, initialData = null, isEdit = fal
       }));
     }
   };
-
+ 
 const handleAgregarProducto = (e) => {
   e.preventDefault();
   
@@ -131,24 +131,24 @@ const handleAgregarProducto = (e) => {
   
   const productoId = parseInt(productoSelect?.value);
   const cantidad = parseInt(cantidadInput?.value) || 1;
-
+ 
   if (!productoId || cantidad < 1) {
     alert('Selecciona un producto y una cantidad válida');
     return;
   }
-
+ 
   const producto = productos.find(p => p.id === productoId);
   if (!producto) return;
-
+ 
   const yaExiste = productosSeleccionados.find(p => p.producto_id === productoId);
   if (yaExiste) {
     alert('Este producto ya fue agregado. Puedes editar su cantidad.');
     return;
   }
-
+ 
   const precioUnitario = producto.precio;
   const subtotal = precioUnitario * cantidad;
-
+ 
   const nuevoProducto = {
     producto_id: productoId,
     nombre: producto.nombre,
@@ -156,22 +156,22 @@ const handleAgregarProducto = (e) => {
     cantidad: cantidad,
     subtotal: subtotal
   };
-
+ 
   setProductosSeleccionados(prev => [...prev, nuevoProducto]);
-
+ 
   // Limpiar campos
   if (productoSelect) productoSelect.value = '';
   if (cantidadInput) cantidadInput.value = '1';
 };
-
-
+ 
+ 
   const handleEliminarProducto = (productoId) => {
     setProductosSeleccionados(prev => prev.filter(p => p.producto_id !== productoId));
   };
-
+ 
   const handleCantidadChange = (productoId, nuevaCantidad) => {
     if (nuevaCantidad < 1) return;
-
+ 
     setProductosSeleccionados(prev => prev.map(p => {
       if (p.producto_id === productoId) {
         const nuevoSubtotal = p.precio_unitario * nuevaCantidad;
@@ -180,18 +180,18 @@ const handleAgregarProducto = (e) => {
       return p;
     }));
   };
-
+ 
   const calcularTotalesDesdeProductos = () => {
     const totalSinIva = productosSeleccionados.reduce((sum, p) => sum + p.subtotal, 0);
     const totalConIva = totalSinIva * (1 + IVA_RATE);
-
+ 
     setFormData(prev => ({
       ...prev,
       monto_recibido_sin_iva: totalSinIva.toFixed(2),
       monto_total_pagado: totalConIva.toFixed(2)
     }));
   };
-
+ 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -199,24 +199,24 @@ const handleAgregarProducto = (e) => {
       minimumFractionDigits: 0
     }).format(value || 0);
   };
-
+ 
   const validateForm = () => {
     const newErrors = {};
-
+ 
     if (!formData.titulo.trim()) newErrors.titulo = 'El título es requerido';
     if (!formData.cliente_id) newErrors.cliente_id = 'Debe seleccionar un cliente';
     if (!formData.fecha_entrega) newErrors.fecha_entrega = 'La fecha de entrega es requerida';
     if (productosSeleccionados.length === 0) {
       newErrors.productos = 'Debes agregar al menos un producto';
     }
-
+ 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+ 
     if (validateForm()) {
       const dataToSubmit = {
         ...formData,
@@ -230,18 +230,30 @@ const handleAgregarProducto = (e) => {
       onSubmit(dataToSubmit);
     }
   };
-
+ 
   const estadoOptions = [
     { value: 'preparando', label: 'Preparando' },
     { value: 'enviado', label: 'Enviado' },
     { value: 'entregado', label: 'Entregado' }
   ];
-
+ 
+  const getClientLabel = (client) => {
+    if (client.persona_natural) {
+      const nombre = client.persona_natural.nombre || '';
+      const apellido = client.persona_natural.apellido || '';
+      return `${nombre} ${apellido}`.trim() || client.correo_electronico;
+    }
+    if (client.persona_juridica) {
+      return client.persona_juridica.razon_social || client.correo_electronico;
+    }
+    return client.correo_electronico;
+  };
+ 
   const clientOptions = clients.map(client => ({
     value: client.id,
-    label: `${client.nombre} ${client.apellido} (${client.correo_electronico})`
+    label: `${getClientLabel(client)} (${client.correo_electronico})`
   }));
-
+ 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       
@@ -250,7 +262,7 @@ const handleAgregarProducto = (e) => {
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Información del Pedido
         </h3>
-
+ 
         <div className="space-y-4 sm:space-y-6">
           <FormField
             label="Título"
@@ -260,7 +272,7 @@ const handleAgregarProducto = (e) => {
             required
             error={errors.titulo}
           />
-
+ 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
               Descripción
@@ -314,7 +326,7 @@ const handleAgregarProducto = (e) => {
               />
             </div>
           </div>
-
+ 
           <FormField
             label="Fecha entrega pedido"
             type="date"
@@ -325,13 +337,13 @@ const handleAgregarProducto = (e) => {
           />
         </div>
       </div>
-
+ 
       {/* CARD: PRODUCTOS DEL PEDIDO */}
       <div className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-200 p-4 sm:p-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Productos del Pedido
         </h3>
-
+ 
         {/* Formulario agregar producto */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -351,7 +363,7 @@ const handleAgregarProducto = (e) => {
                 ))}
               </select>
             </div>
-
+ 
             <div className="w-full sm:w-28">
               <input
                 type="number"
@@ -362,7 +374,7 @@ const handleAgregarProducto = (e) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base text-black"
               />
             </div>
-
+ 
             <button
               onClick={handleAgregarProducto}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base"
@@ -371,7 +383,7 @@ const handleAgregarProducto = (e) => {
             </button>
           </div>
         </div>
-
+ 
         {/* Lista de productos */}
         {productosSeleccionados.length > 0 ? (
           <div className="space-y-3">
@@ -387,7 +399,7 @@ const handleAgregarProducto = (e) => {
                       </span>
                     </p>
                   </div>
-
+ 
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -428,13 +440,13 @@ const handleAgregarProducto = (e) => {
           <p className="mt-2 text-sm text-red-600">{errors.productos}</p>
         )}
       </div>
-
+ 
       {/* CARD 2: Detalles del Pedido */}
       <div className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-200 p-4 sm:p-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Detalles del Pedido
         </h3>
-
+ 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-4 sm:space-y-6">
             <FormField
@@ -443,7 +455,7 @@ const handleAgregarProducto = (e) => {
               value={formData.fecha_despacho || ''}
               onChange={(e) => handleInputChange('fecha_despacho', e.target.value)}
             />
-
+ 
             <SelectField
               label="Estado del pedido"
               value={formData.estado}
@@ -452,7 +464,7 @@ const handleAgregarProducto = (e) => {
               required
               error={errors.estado}
             />
-
+ 
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
                 Monto total pagado (con IVA)
@@ -473,7 +485,7 @@ const handleAgregarProducto = (e) => {
                 />
               </div>
             </div>
-
+ 
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
                 Monto total recibido (sin IVA)
@@ -495,7 +507,7 @@ const handleAgregarProducto = (e) => {
               </div>
             </div>
           </div>
-
+ 
           <div className="space-y-4 sm:space-y-6">
             <FormField
               label="Fecha salida aduana"
@@ -503,7 +515,7 @@ const handleAgregarProducto = (e) => {
               value={formData.fecha_salida_aduana || ''}
               onChange={(e) => handleInputChange('fecha_salida_aduana', e.target.value)}
             />
-
+ 
             <SelectField
               label="Usuario respectivo del pedido"
               value={formData.cliente_id}
@@ -517,7 +529,7 @@ const handleAgregarProducto = (e) => {
           </div>
         </div>
       </div>
-
+ 
       {/* BOTONES */}
       <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-2">
         <button
@@ -538,5 +550,5 @@ const handleAgregarProducto = (e) => {
     </form>
   );
 };
-
+ 
 export default OrderForm;
