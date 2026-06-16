@@ -241,7 +241,7 @@ const ClientForm = ({ onSubmit, loading = false, initialData = null, isEdit = fa
     setCiudades([]);
   }, [formData.pais_residencia]);
  
-  // Cuando cambia el departamento: calcular ciudades desde geodata (sin fetch)
+  // Cuando cambia el departamento: calcular ciudades desde geodata (sin fetch) A
   useEffect(() => {
     if (!formData.departamento_estado) {
       setCiudades([]);
