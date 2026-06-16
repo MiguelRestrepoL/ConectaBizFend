@@ -1,8 +1,8 @@
 'use client';
-
+ 
 import React from 'react';
 import StockBadge from './StockBadge';
-
+ 
 const ProductCard = ({ 
   product, 
   onEdit, 
@@ -18,24 +18,13 @@ const ProductCard = ({
       minimumFractionDigits: 0
     }).format(amount || 0);
   };
-
+ 
   // Obtener nombre del proveedor de forma segura
   const getProveedorName = () => {
     if (!product.proveedor) return 'Sin proveedor';
-    
-    if (product.proveedor.persona_natural) {
-      const nombre = product.proveedor.persona_natural.nombre || '';
-      const apellido = product.proveedor.persona_natural.apellido || '';
-      return `${nombre} ${apellido}`.trim() || 'Sin nombre';
-    }
-    
-    if (product.proveedor.persona_juridica) {
-      return product.proveedor.persona_juridica.razon_social || 'Empresa';
-    }
-    
-    return 'Sin nombre';
+    return product.proveedor.nombre || 'Sin nombre';
   };
-
+ 
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border border-gray-200">
       {/* Card Content */}
@@ -60,7 +49,7 @@ const ProductCard = ({
                 </p>
               )}
             </div>
-
+ 
             {/* Botones de Acción - MÓVIL (solo iconos) */}
             <div className="flex sm:hidden items-center gap-1">
               <button
@@ -102,7 +91,7 @@ const ProductCard = ({
               </button>
             </div>
           </div>
-
+ 
           {/* Fila 2: Badge Stock + ID + Acciones Desktop */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -118,7 +107,7 @@ const ProductCard = ({
                 ID: #{product.id}
               </span>
             </div>
-
+ 
             {/* Botones de Acción - DESKTOP (con texto) */}
             <div className="hidden sm:flex items-center gap-2">
               <button
@@ -165,7 +154,7 @@ const ProductCard = ({
             </div>
           </div>
         </div>
-
+ 
         {/* BODY: Info del Producto */}
         <div className="space-y-2 mb-4">
           {/* Proveedor */}
@@ -177,7 +166,7 @@ const ProductCard = ({
               {getProveedorName()}
             </span>
           </div>
-
+ 
           {/* Descripción (solo desktop) */}
           {product.descripcion && (
             <p className="hidden lg:block text-sm text-gray-600 line-clamp-2" title={product.descripcion}>
@@ -185,7 +174,7 @@ const ProductCard = ({
             </p>
           )}
         </div>
-
+ 
         {/* FOOTER: Precio + Estado */}
         <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-200">
           {/* Precio */}
@@ -195,7 +184,7 @@ const ProductCard = ({
               {formatCurrency(product.precio)}
             </span>
           </div>
-
+ 
           {/* Estado activo/inactivo */}
           <div className="text-right">
             <span className="text-xs text-gray-700 block mb-1 font-medium">Estado</span>
@@ -208,10 +197,10 @@ const ProductCard = ({
             </span>
           </div>
         </div>
-
+ 
       </div>
     </div>
   );
 };
-
+ 
 export default ProductCard;

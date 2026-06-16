@@ -1,10 +1,10 @@
 'use client';
-
+ 
 import React, { useState, useEffect } from 'react';
 import FormField from './FormField';
 import SelectField from './SelectField';
-import { getClients } from '../api/clients';
-
+import { getProveedores } from '../api/proveedores';
+ 
 const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = false }) => {
   const [formData, setFormData] = useState(initialData || {
     nombre: '',
@@ -16,21 +16,21 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
     proveedor_id: '',
     estado: true
   });
-
+ 
   const [errors, setErrors] = useState({});
   const [proveedores, setProveedores] = useState([]);
   const [loadingProveedores, setLoadingProveedores] = useState(true);
-
-  // Cargar clientes (proveedores) para el select
+ 
+  // Cargar proveedores para el select
   useEffect(() => {
     const loadProveedores = async () => {
       try {
         setLoadingProveedores(true);
-        const result = await getClients({ limit: 1000 });
-
+        const result = await getProveedores({ limit: 1000, includeInactive: false });
+ 
         if (result.success) {
-          const clientsData = result.data.clients || result.data.data || result.data;
-          setProveedores(clientsData);
+          const data = result.data.proveedores || result.data.data || result.data;
+          setProveedores(data || []);
         }
       } catch (error) {
         console.error('Error loading proveedores:', error);
@@ -38,23 +38,23 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
         setLoadingProveedores(false);
       }
     };
-
+ 
     loadProveedores();
   }, []);
-
+ 
   // Actualizar formData cuando cambien los initialData
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
     }
   }, [initialData]);
-
+ 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-
+ 
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -63,10 +63,10 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
       }));
     }
   };
-
+ 
   const validateForm = () => {
     const newErrors = {};
-
+ 
     if (!formData.nombre.trim()) newErrors.nombre = 'El nombre es requerido';
     if (!formData.precio || formData.precio <= 0) {
       newErrors.precio = 'El precio debe ser mayor a 0';
@@ -77,35 +77,24 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
     if (formData.stock_minimo < 0) {
       newErrors.stock_minimo = 'El stock mínimo no puede ser negativo';
     }
-
+ 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+ 
     if (validateForm()) {
       onSubmit(formData);
     }
   };
-
-  const proveedorOptions = proveedores.map(cliente => {
-    let label = '';
-    if (cliente.persona_natural) {
-      label = `${cliente.persona_natural.nombre} ${cliente.persona_natural.apellido} (${cliente.correo_electronico})`;
-    } else if (cliente.persona_juridica) {
-      label = `${cliente.persona_juridica.razon_social} (${cliente.correo_electronico})`;
-    } else {
-      label = cliente.correo_electronico;
-    }
-    
-    return {
-      value: cliente.id,
-      label
-    };
-  });
-
+ 
+  const proveedorOptions = proveedores.map(proveedor => ({
+    value: proveedor.id,
+    label: proveedor.correo ? `${proveedor.nombre} (${proveedor.correo})` : proveedor.nombre
+  }));
+ 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       
@@ -114,7 +103,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Información del Producto
         </h3>
-
+ 
         <div className="space-y-4 sm:space-y-6">
           {/* Grid: 2 columnas en desktop */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -127,7 +116,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
               required
               error={errors.nombre}
             />
-
+ 
             {/* Código */}
             <FormField
               label="Código (opcional)"
@@ -137,7 +126,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
               error={errors.codigo}
             />
           </div>
-
+ 
           {/* Descripción */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -153,13 +142,13 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
           </div>
         </div>
       </div>
-
+ 
       {/* CARD 2: Precio e Inventario */}
       <div className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-200 p-4 sm:p-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Precio e Inventario
         </h3>
-
+ 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Precio */}
           <div>
@@ -185,7 +174,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
               <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.precio}</p>
             )}
           </div>
-
+ 
           {/* Stock Actual */}
           <FormField
             label="Stock Actual"
@@ -196,7 +185,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
             placeholder="0"
             error={errors.stock}
           />
-
+ 
           {/* Stock Mínimo */}
           <FormField
             label="Stock Mínimo (Alerta)"
@@ -209,13 +198,13 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
           />
         </div>
       </div>
-
+ 
       {/* CARD 3: Proveedor y Estado */}
       <div className="bg-white rounded-lg sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-200 p-4 sm:p-6">
         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">
           Proveedor y Estado
         </h3>
-
+ 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Proveedor */}
           <SelectField
@@ -226,7 +215,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
             placeholder={loadingProveedores ? "Cargando proveedores..." : "Seleccionar proveedor"}
             disabled={loadingProveedores}
           />
-
+ 
           {/* Estado */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -257,7 +246,7 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
           </div>
         </div>
       </div>
-
+ 
       {/* BOTONES DE ACCIÓN */}
       <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-2">
         <button
@@ -278,5 +267,5 @@ const ProductForm = ({ onSubmit, loading = false, initialData = null, isEdit = f
     </form>
   );
 };
-
+ 
 export default ProductForm;
