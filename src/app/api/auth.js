@@ -25,18 +25,18 @@ api.interceptors.request.use(
 
 // Interceptor para manejar respuestas de error
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
-      localStorage.removeItem('authToken');
-      window.location.href = '/';
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest) {
+        localStorage.removeItem('authToken');
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
-);
+)
 
 // Servicios de autenticación
 export const authService = {
